@@ -97,8 +97,8 @@ By right clicking on a folder you can either exclude it or show matches only fro
 
 ### Blacklist Files And Directories
 
-You may not want to search every single file or directory in the project. In this case, create a file in your project folder called '`.sahignore`'. This file should contain names of all the files and directories that you want to be excluded from the code scan. 
-In lieu of a `.sahignore` file, a default blacklist is used containing some commonly blacklisted files and directories (`node_modules`, `package-lock.json` etc.)
+You may not want to search every single file or directory in the project. In this case, create a file in your project folder called '`.semgrepignore`'. This file should contain names of all the files and directories that you want to be excluded from the code scan. 
+In lieu of a `.semgrepignore` file, a default blacklist is used containing some commonly blacklisted files and directories (`node_modules`, `package-lock.json` etc.)
 
 ### Command Palette
 

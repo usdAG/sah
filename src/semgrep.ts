@@ -229,14 +229,30 @@ export async function startSemgrepScan(
     }
   }
 
-  // chain exlusion and inclusions + add .sahignore
+  // chain exlusion and inclusions
   if (output !== "") {    
     semgrepCommand += ` --json-output ${output}`;
   }
-  if (include !== "") semgrepCommand += ` --include '${include}'`;
-  if (exclude !== "") semgrepCommand += ` --exclude '${exclude}'`;
+  // we need multiple --include/--exclude
+  // see https://semgrep.dev/docs/cli-reference
+  if (include !== "") {
+    include
+      .split(',')
+      .map(s => s.trim())      
+      .forEach(pattern => {
+        semgrepCommand += ` --include ${pattern}`;
+      });
+  }
 
-  semgrepCommand += ' --exclude-file .sahignore'
+  if (exclude !== "") {
+    exclude
+      .split(',')
+      .map(s => s.trim())      
+      .forEach(pattern => {
+        semgrepCommand += ` --exclude ${pattern}`;
+      });
+  }
+
 
   console.debug("Executing Semgrep command:", semgrepCommand);
 
@@ -342,7 +358,10 @@ export async function startSemgrepScan(
             reject(new Error(outputMessage));
           }
           if (_jsonData.results.length == 0){
-            reject(new Error(`No Results from the Semgrep Scan ${SemgrepOutput}`))
+            vscode.window.showWarningMessage('Semgrep didn\'t found any Matches!');
+            hasFailed = true
+            reject(new Error('Semgrep didn\'t found any Matches!'))
+            return
           }
           console.debug("No errors found :D");
         } catch (parseError) {
@@ -376,7 +395,9 @@ export async function startSemgrepScan(
           try {
             jsonData = JSON.parse(data);            
             //console.debug('Semgrep JSON Output:', jsonData);   
-            finalImportSemgrepJson(); 
+            if (!hasFailed){
+              finalImportSemgrepJson(); 
+            }
           } catch (parseError) {
             vscode.window.showErrorMessage(`Failed to parse Semgrep output from file JSON: ${parseError}`);
           }
