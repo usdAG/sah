@@ -366,9 +366,7 @@ export async function startSemgrepScan(
           console.debug("No errors found :D");
         } catch (parseError) {
           // known error if the output to stdout of the scan is to long it breaks
-          hasFailed = true
           console.debug(`Failed to parse Semgrep output ${parseError}`);
-          return
         }
         //reject(new Error(`Failed to parse Semgrep ${SemgrepOutput}`));
       } else if (regexEndOfScanMatch){
