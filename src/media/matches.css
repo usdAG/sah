@@ -1,0 +1,288 @@
+* {
+  border: none;
+}
+
+table {
+  width: 100%;
+}
+
+.code-line {
+  font-family: Courier;
+}
+
+button:focus {
+  outline: none;
+}
+
+button:hover {
+  cursor: pointer;
+}
+
+.jump-to-code-btn {
+  display: inline;
+  font-size: 1.5em;
+  margin-left: 20px;
+  color: var(--vscode-button-foreground);
+}
+
+.jump-to-code-btn:hover {
+  cursor: pointer;
+  color: var(--vscode-button-hover-foreground);
+  text-decoration: underline;
+}
+
+.finding-btn {
+  display: inline;
+  font-size: 2em;
+  margin-left: 20px;
+  color: var(--vscode-button-foreground);
+}
+
+.finding-btn:hover {
+  cursor: pointer;
+  color: var(--vscode-button-hover-foreground);
+  text-decoration: underline;
+}
+
+.falsePositive-btn {
+  display: inline;
+  font-size: 1.5em;
+  margin-left: 20px;
+  color: var(--vscode-button-foreground);
+}
+
+.falsePositive-btn:hover {
+  cursor: pointer;
+  color: var(--vscode-button-hover-foreground);
+  text-decoration: underline;
+}
+
+.saveForLater-btn {
+  display: inline;
+  font-size: 1.5em;
+  margin-left: 20px;
+  color: var(--vscode-button-foreground);
+}
+
+.saveForLater-btn:hover {
+  cursor: pointer;
+  color: var(--vscode-button-hover-foreground);
+  text-decoration: underline;
+}
+
+.match-highlight {
+  color: var(--vscode-errorForeground);
+}
+
+.file-highlight {
+  color: var(--vscode-foreground);
+}
+
+#toggle {
+  color: var(--vscode-foreground);
+  text-decoration: underline;
+}
+
+#toggle:hover {
+  cursor: pointer;
+  color: var(--vscode-foreground);
+}
+
+.match-container {
+  border: 1px solid var(--vscode-editorWidget-border);
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 15px;
+  background-color: var(--vscode-editorWidget-background);
+  color: var(--vscode-editor-foreground);
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+#status-selection {
+  width: 200px;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid var(--vscode-editorWidget-border);
+  border-radius: 5px;
+  background-color: var(--vscode-editorWidget-background);
+  color: var(--vscode-editor-foreground);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+#status-selection:hover {
+  border-color: var(--vscode-focusBorder);
+}
+
+#status-selection:focus {
+  outline: none;
+  border-color: var(--vscode-focusBorder);
+  box-shadow: 0 0 5px var(--vscode-focusBorder);
+}
+
+#criticality-selection {
+  width: 200px;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid var(--vscode-editorWidget-border);
+  border-radius: 5px;
+  background-color: var(--vscode-editorWidget-background);
+  color: var(--vscode-editor-foreground);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+#criticality-selection:hover {
+  border-color: var(--vscode-focusBorder);
+}
+
+#criticality-selection:focus {
+  outline: none;
+  border-color: var(--vscode-focusBorder);
+  box-shadow: 0 0 5px var(--vscode-focusBorder);
+}
+
+#category-selection {
+  width: 200px;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid var(--vscode-editorWidget-border);
+  border-radius: 5px;
+  background-color: var(--vscode-editorWidget-background);
+  color: var(--vscode-editor-foreground);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+#category-selection:hover {
+  border-color: var(--vscode-focusBorder);
+}
+
+#category-selection:focus {
+  outline: none;
+  border-color: var(--vscode-focusBorder);
+  box-shadow: 0 0 5px var(--vscode-focusBorder);
+}
+
+#rules-selection {
+  width: 200px;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid var(--vscode-editorWidget-border);
+  border-radius: 5px;
+  background-color: var(--vscode-editorWidget-background);
+  color: var(--vscode-editor-foreground);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+#rules-selection:hover {
+  border-color: var(--vscode-focusBorder);
+}
+
+#rules-selection:focus {
+  outline: none;
+  border-color: var(--vscode-focusBorder);
+  box-shadow: 0 0 5px var(--vscode-focusBorder);
+}
+
+.comment-btn {
+  display: inline;
+  font-size: 1.5em;
+  margin-left: 20px;
+  color: var(--vscode-button-foreground);
+}
+
+.comment-btn:hover {
+  cursor: pointer;
+  color: var(--vscode-button-hover-foreground);
+  text-decoration: underline;
+}
+
+/*
+Make the input fully transparent
+--> looks like the other table columns
+*/
+.comment-input {
+  background-color: transparent;
+  border: transparent;
+  color: white;
+  outline: none;
+}
+
+
+#file-view {
+  width: 200px;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid var(--vscode-editorWidget-border);
+  border-radius: 5px;
+  background-color: var(--vscode-editorWidget-background);
+  color: var(--vscode-editor-foreground);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+#file-view:hover {
+  border-color: var(--vscode-focusBorder);
+}
+
+#file-view:focus {
+  outline: none;
+  border-color: var(--vscode-focusBorder);
+  box-shadow: 0 0 5px var(--vscode-focusBorder);
+}
+
+.info-icon {
+  cursor: help;
+  font-size: 14px;
+  margin-left: 5px;
+  color: var(--vscode-editorLink-foreground);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 15px;
+  padding: 10px;
+  border: 1px solid var(--vscode-editorWidget-border);
+  border-radius: 5px;
+  background-color: var(--vscode-editorWidget-background);
+  color: var(--vscode-editor-foreground);
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.pagination span {
+  font-size: 14px;
+}
+
+.pagination button {
+  padding: 5px 10px;
+  font-size: 14px;
+  border: 1px solid var(--vscode-editorWidget-border);
+  border-radius: 4px;
+  background-color: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  cursor: pointer;
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.pagination button:hover {
+  background-color: var(--vscode-button-hoverBackground);
+  box-shadow: 0 0 5px var(--vscode-focusBorder);
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: var(--vscode-editorWidget-background);
+  color: var(--vscode-disabledForeground);
+  border-color: var(--vscode-editorWidget-border);
+}
+
+.page-info {
+  font-weight: bold;
+  padding: 0 10px;
+}

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src {{cspSource}}; script-src {{cspSource}};">
+    <link rel="stylesheet" type="text/css" href={{stylesheetUri}} />
+    
+    <title>Semgrep Tool</title>
+  
+</head>
+<body>
+  <div class="container">    
+    <form id="semgrepForm">
+      <!-- Import Semgrep -->
+      <div class="form-group">
+        <h3>Import Semgrep</h3>        
+        <div class="input-wrapper">
+          <button type="button" id="startImportSemgrep">Select Scan</button>
+          <input type="text" id="semgrepScanImportPath" placeholder="Enter the path to your Semgrep Scan">
+        </div>
+        
+        <button type="button" id="semgrepScanImportPathBtn">Import from Path</button> 
+        <label for="semgrepPath" id="semgrepPathLabel">This shows the first scanned file of the semgrep scan.
+         The path is NOT relative to the project root folder. SAH however needs the relative path.
+         Modify you Semgrep scan to only include relative paths or rescan with SAH! </label>
+        <input type="text" id="semgrepPath" placeholder="Enter the path to Semgrep files">
+        <span id="pathStatus" style="margin-left: 10px;"></span>
+        <button type="button" id="finalImportSemgrep">Import</button>    
+    </form>
+
+    <!-- Start Semgrep Scan -->
+    <div class="form-group">
+      <h3>Start a Semgrep Scan</h3>
+
+       <!-- Scan Target -->
+      <label for="scanTarget">Target of the scan:</label>
+      <div class="input-wrapper">
+        <button type="button" id="scanTargetWizard" class="folder-btn">Select Folder/File</button>
+        <input type="text" id="scanTarget" value="{{CWD}}">
+      </div>
+
+      <!-- Config Path -->
+      <label for="configPath">Config to include:</label>
+      <div class="input-wrapper">
+        <button type="button" id="configPathWizard" class="folder-btn">Select File</button>
+        <input type="text" id="configPath" value="auto">
+      </div>
+
+      <!-- Output Path -->
+      <label for="outputPath">Output destination (optional):</label>
+      <div class="input-wrapper">
+        <button type="button" id="outputPathWizard" class="folder-btn">Select Folder</button>  
+        <input type="text" id="outputPath" placeholder="<Date in YYYYMMDD>_semgrep_<ruleset>.json">
+      </div>
+
+      <!-- Exclude Pattern -->
+      <label for="excludePattern">Exclude pattern(s):</label>
+      <div class="input-wrapper">
+        <input type="text" id="excludePattern" placeholder="e.g., *.py, tests" />
+        <small>Add multiple patterns separated by commas</small>
+      </div>
+
+      <!-- Include Pattern -->
+      <label for="includePattern">Include pattern(s):</label>
+      <div class="input-wrapper">
+        <input type="text" id="includePattern" placeholder="e.g., src/*.jsx, foo.*" />
+        <small>Add multiple patterns separated by commas</small>
+      </div>
+
+      <!-- Start Scan -->
+      <div id="scanStatus" class="scan-status">
+        ⏳ Scanning in progress...
+      </div>
+      
+      <button type="button" id="startSemgrepScan">Start Scan</button>
+      <button type="button" id="importSemgrepScanResults">Import Results form Semgrep scan</button> 
+    </div>
+    
+  </div>
+  <script src={{scriptUri}}></script>
+</body>
+</html>

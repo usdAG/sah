@@ -1,0 +1,171 @@
+{
+	"name": "sah",
+	"displayName": "Static Analysis Hero",
+	"publisher": "usdAG",
+	"description": "Bringing code-reviews to the next level",
+	"version": "2.0.1",
+	"engines": {
+		"vscode": "^1.40.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [],
+	"main": "./dist/extension",
+	"contributes": {
+		"commands": [			
+			{
+				"command": "extension.newProject",
+				"title": "SAH New Project"
+			},
+			{
+				"command": "extension.loadProject",
+				"title": "SAH Load Project"
+			},
+			{
+				"command": "extension.showMatchesList",
+				"title": "SAH Show Matches List"
+			},
+			{
+				"command": "extension.importSemgrepScan",
+				"title": "SAH Semgrep"
+			},
+			{
+				"command": "fileExplorer.refresh",
+				"title": "SAH Refresh File Explorer"
+			},
+			{
+				"command": "fileExplorer.exclude",
+				"title": "Exclude File/Folder"
+			},
+			{
+				"command": "fileExplorer.unexclude",
+				"title": "Unexclude File/Folder"
+			},
+			{
+				"command": "fileExplorer.showMatchesIn",
+				"title": "Show Matches in this path"
+			},
+      {
+        "command": "fileExplorer.toggleHidden",
+        "title": "Hide Excluded Files"  
+      },
+      {
+        "command": "fileExplorer.toggleVisible",
+        "title": "Show Excluded Files"  
+      },
+      {
+        "command": "extension.saveProject",
+        "title": "SAH Save Project"
+      },
+      {
+        "command": "fileExplorer.showMatchesForFile",
+        "title": "SAH Only show Matches for this file/folder"
+      },
+      {
+        "command": "fileExplorer.resetExclusion",
+        "title": "SAH Reset the Exclusion of all files/folders"
+      },
+	  {
+        "command": "fileExplorer.resetExclusionShortText",
+        "title": "Reset Excludes"
+      },
+      {
+        "command": "extension.deduplicateMatches",
+        "title": "SAH deduplicate Matches"
+      }
+		],
+		"keybindings": [
+		],
+		"menus": {			
+      "view/title": [
+        {
+          "command": "fileExplorer.toggleHidden",
+          "when": "view == fileExplorer && fileExplorer:showExcluded",
+          "group": "navigation"
+        },
+        {
+          "command": "fileExplorer.toggleVisible",
+          "when": "view == fileExplorer && !fileExplorer:showExcluded",
+          "group": "navigation"
+        },
+		{
+			"command": "fileExplorer.resetExclusionShortText",
+			"when": "view == fileExplorer",
+			"group": "navigation"
+		}
+      ],
+			"view/item/context": [
+				{
+					"command": "fileExplorer.exclude",
+					"when": "view == fileExplorer",
+					"group": "navigation"
+				},
+				{
+					"command": "fileExplorer.unexclude",
+					"when": "view == fileExplorer",
+					"group": "navigation"
+				},
+				{
+					"command": "fileExplorer.showMatchesIn",
+					"when": "view == fileExplorer",
+					"group": "navigation"
+				}
+			],
+      "explorer/context": [        
+        {
+          "command": "fileExplorer.showMatchesForFile",
+          "group": "navigation@1"
+        },
+        {
+          "command": "fileExplorer.resetExclusion",
+          "group": "navigation@2"
+        }    
+      ]
+		},
+		"views": {
+			"explorer": [
+				{
+					"id": "fileExplorer",
+					"name": "File Explorer"
+				}
+			]
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "webpack --mode production",
+		"webpack": "webpack --mode development",
+		"webpack-dev": "webpack --mode development --watch",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"pretest": "npm run compile",
+		"test": "node ./out/test/runTest.js"
+	},
+	"devDependencies": {
+		"@types/glob": "^8.1.0",
+		"@types/mocha": "^10.0.1",
+		"@types/node": "^20.4.2",
+		"@types/vscode": "^1.40.0",
+		"@typescript-eslint/eslint-plugin": "^6.1.0",
+		"@typescript-eslint/parser": "^6.1.0",
+		"eslint": "^8.45.0",
+		"eslint-config-airbnb-base": "^15.0.0",
+		"eslint-plugin-import": "^2.18.2",
+		"glob": "^10.3.3",
+		"mocha": "^10.2.0",
+		"ts-loader": "^9.4.4",
+		"typescript": "^5.1.6",
+		"vscode-test": "^1.2.2",
+		"webpack": "^5.88.2",
+		"webpack-cli": "^5.1.4"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/usdAG/sah"
+	},
+	"dependencies": {
+		"axios": "^1.4.0",
+		"sanitize-html": "^2.11.0",
+		"vsce": "^2.15.0"
+	}
+}

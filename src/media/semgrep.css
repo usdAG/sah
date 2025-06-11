@@ -1,0 +1,120 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background-color: var(--vscode-editor-background);
+  color: var(--vscode-editor-foreground);
+}
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid var(--vscode-editorWidget-border);
+  border-radius: 8px;
+  background-color: var(--vscode-editorWidget-background);
+}
+.form-group {
+  margin-bottom: 15px;
+}
+label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: var(--vscode-editor-foreground);
+}
+input[type="text"],
+input[type="file"],
+button,
+select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  border: 1px solid var(--vscode-editorWidget-border);
+  border-radius: 4px;
+  background-color: var(--vscode-editorWidget-background);
+  color: var(--vscode-editor-foreground);
+}
+button {
+  background-color: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+  border: none;
+  cursor: pointer;
+}
+button:hover {
+  background-color: var(--vscode-button-secondaryHoverBackground);
+}
+.input-wrapper {
+display: flex;
+align-items: center;
+margin-bottom: 10px;
+}
+.folder-btn {
+margin-left: 5px;
+padding: 5px 10px;
+font-size: 14px;
+cursor: pointer;
+background-color: var(--vscode-button-background);
+color: var(--vscode-button-foreground);
+}
+.folder-btn:hover {
+  background-color: var(--vscode-button-secondaryHoverBackground);
+}
+.input-wrapper input[type="text"] {
+flex: 1; /* Take up as much space as possible */
+padding: 8px;
+font-size: 14px;
+}
+.input-wrapper button {
+width: 150px; /* Allow it to adjust naturally */
+padding: 5px 10px;
+font-size: 14px;
+cursor: pointer;
+background-color: var(--vscode-button-secondaryBackground);
+color: var(--vscode-button-secondaryForeground);
+}
+small {
+display: block;
+margin-left: 5px;
+padding: 5px 10px;
+font-size: 14px;
+color: var(--vscode-button-secondaryForeground);
+background-color: var(--vscode-button-secondaryBackground);
+margin-top: 5px;
+}
+
+#scanStatus {
+  display: none;
+  visibility: hidden;
+  color: blue;
+  margin-top: 10px;
+}
+
+#scanStatus.show {
+  display: block;
+  visibility: visible;
+}
+
+#finalImportSemgrep {
+  background-color: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+}
+
+#finalImportSemgrep:hover {
+  background-color: var(--vscode-button-hoverBackground);
+}
+
+#startSemgrepScan {
+  background-color: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+}
+
+#startSemgrepScan:hover {
+  background-color: var(--vscode-button-hoverBackground);
+}
+
+#semgrepPath{
+  visibility: hidden;
+}
+
+#semgrepPathLabel{
+  visibility: hidden;
+}
