@@ -1,0 +1,7 @@
+node_modules/
+package-lock.json
+.eslintrc.js
+dist/
+out/
+.vscode-test/
+*.vsix
