@@ -1,6 +1,6 @@
 export interface Pattern {
   id: string;
-  category: string;
+  description: string;
   criticality: number;
   pattern: RegExp | string;
   lang: string;
