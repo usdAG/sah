@@ -33,23 +33,23 @@ export async function startImportSemgrepJson(panel: vscode.WebviewPanel, file_pa
     console.debug(`Importing: ${jsonData.results.length} Matches` )
     if (jsonData.results && Array.isArray(jsonData.results)) {
       for (const result of jsonData.results) {
-        console.debug(`Relative path ${result.path}`)
-        // early exit if path is not validated            
+        console.debug(`Relative path ${result.path}`)         
         panel.webview.postMessage({
             command: 'relativePath',
             path: result.path
         });
+        // early exit if path is not validated 
         if (path.isAbsolute(result.path)) {
           vscode.window.showErrorMessage(`Path is absolute: ${result.path}`);
           return;
         }
-        return
+        break
       }
+    finalImportSemgrepJson()
     }
   } catch (error) {
       vscode.window.showErrorMessage(`An error occurred loading the scan: ${error}`);
   }
- 
 }
 
 // function to import the Semgrep after the Path has been validated
@@ -102,7 +102,7 @@ export async function finalImportSemgrepJson(){
         const ruleName = ruleSplinters.at(ruleSplinters.length-1);
         const pattern : Pattern = {
             id: ruleName,
-            category: result.extra.message,
+            description: result.extra.message,
             criticality: criticality,
             pattern: ruleName,
             lang: "semgrep"
@@ -185,7 +185,6 @@ export async function handlePathSelection(
 }
 
 export async function startSemgrepScan(
-  target: string,
   config: string,
   output: string,
   include: string,
@@ -193,6 +192,7 @@ export async function startSemgrepScan(
   panel: vscode.WebviewPanel
 ): Promise<void> {
   if (config === "") config = "auto";
+  const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
 
   let semgrepPath = await checkSemgrepPath();
   console.log("semgrepPath",semgrepPath)
@@ -292,14 +292,14 @@ export async function startSemgrepScan(
       // cmd >>>>> powershell
       child = spawn(shell,['/c',`${semgrepCommand} 2>&1`], {
         stdio: ['ignore', 'pipe', 'pipe'],
-        cwd: vscode.Uri.file(target).fsPath // use the target Path as cwd to always get the correct relative file structure
+        cwd: workspaceFolder // use the workspaceFolder Path as cwd to always get the correct relative file structure
       })
 
     } else {
       // Use script to capture live output with a pseudo-TTY (PTY)
       child = spawn('script', ['-q', '/dev/null', '-c', `${shell} -c "` + semgrepCommand + '"'], {
         stdio: ['ignore', 'pipe', 'pipe'],
-        cwd: vscode.Uri.file(target).fsPath // use the target Path as cwd to always get the correct relative file structure
+        cwd: workspaceFolder// use the workspaceFolder Path as cwd to always get the correct relative file structure
       });      
     }
     // Display stdout (progress bar + results) which includes PTY

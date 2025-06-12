@@ -83,7 +83,7 @@ function generateCategorySelection(matches: Array<Match>) {
   console.debug("start generateCategorySelection")
   // Extract unique categories from array using Set
   // then convert back to an array and sort alphabetically
-  const categories = Array.from(new Set(matches.map((m) => m.pattern.category))).sort();
+  const categories = Array.from(new Set(matches.map((m) => m.pattern.description))).sort();
 
   return `
     <option value="all" id="category-selection">All Categories</option>
@@ -141,7 +141,7 @@ const generateMatchesWebview = (
   // Filter for Category
   if (selectedCategory !== "all") {
     console.debug('Category filter with', selectedCategory); 
-    _matches = _matches.filter((m) => m.pattern.category == selectedCategory);    
+    _matches = _matches.filter((m) => m.pattern.description == selectedCategory);    
   }
   console.debug(_matches)
 
@@ -173,7 +173,6 @@ const generateMatchesWebview = (
     const highlightedCodeLine = parsedPattern.exec(m.lineContent);
     const relativePath = m.path.replace(vscode.workspace.rootPath !== undefined ? vscode.workspace.rootPath : '', '.');
 
-    const detectionType = m.detectionType ? m.detectionType : 'unknown';
     // construct HTML for single match
     matchesString += `
     <div id="${m.matchId}" class="match-container">
@@ -189,20 +188,12 @@ const generateMatchesWebview = (
     </p>
     <table>
       <tr>
-        <td>Detected by:</td>
-        <td>
-          ${detectionType}
-          <span class="info-icon" title="Detection pattern: ${sanitizeContent(m.pattern.pattern.toString())}">&#8505;</span>
-        </td>
-      </tr>
-
-      <tr>
         <td>Type:</td>
         <td>${m.pattern.id}</td>
       </tr>
       <tr>
-        <td>Category:</td>
-        <td>${m.pattern.category}</td>
+        <td>Description:</td>
+        <td>${m.pattern.description}</td>
       </tr>
       <tr>
         <td>Criticality:</td>

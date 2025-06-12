@@ -93,21 +93,21 @@ margin-top: 5px;
   visibility: visible;
 }
 
-#finalImportSemgrep {
-  background-color: var(--vscode-button-background);
-  color: var(--vscode-button-foreground);
-}
-
-#finalImportSemgrep:hover {
-  background-color: var(--vscode-button-hoverBackground);
-}
-
 #startSemgrepScan {
   background-color: var(--vscode-button-background);
   color: var(--vscode-button-foreground);
 }
 
 #startSemgrepScan:hover {
+  background-color: var(--vscode-button-hoverBackground);
+}
+
+#semgrepScanImportPathBtn {
+  background-color: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+}
+
+#semgrepScanImportPathBtn:hover {
   background-color: var(--vscode-button-hoverBackground);
 }
 

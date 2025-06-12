@@ -143,13 +143,8 @@ export const activate = (context: vscode.ExtensionContext) => {
             break;
           case 'startSemgrepImport':
             console.debug("startSemgrepImport called")
-            startImportSemgrepJson(panel, message.path);            
+            startImportSemgrepJson(panel, message.path);
             break;
-          case 'finalSemgrepImport':{            
-            console.debug('finalSemgrepImport called')
-            finalImportSemgrepJson();            
-            break;
-          }
           case 'validatePath':{
             const isValid = isRelative(message.path);
             console.debug(`validatePath called ${message.path} ${isValid}`)          
@@ -158,15 +153,7 @@ export const activate = (context: vscode.ExtensionContext) => {
                 isValid: isValid
             });
             break;
-          }
-          case 'scanTargetBtn':
-            handlePathSelection(
-              'scanTargetBtn',
-              'dynamic',
-              'Select a folder or file to scan',
-              panel);
-            break;
-        
+          }        
           case 'configPathBtn':
             handlePathSelection(
               'configPathBtn',
@@ -198,11 +185,10 @@ export const activate = (context: vscode.ExtensionContext) => {
             const include: string  = message.include 
             const output: string  = message.output
             const config: string  = message.config
-            const target: string  = message.target
             displayNoProjectWarning();
             console.debug(message)            
             try {
-              await startSemgrepScan(target, config, output, include, exclude, panel);
+              await startSemgrepScan( config, output, include, exclude, panel);
               panel.webview.postMessage({
                   command: 'scanComplete',
               });
@@ -232,7 +218,7 @@ export const activate = (context: vscode.ExtensionContext) => {
             break;  
 
           case 'addComment':
-            await addComment(message.data,message.data_id)
+            await addComment(message.data, message.data_id)
             break
           case 'showMessage':
             vscode.window.showInformationMessage(message.message);
