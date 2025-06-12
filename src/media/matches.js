@@ -142,5 +142,25 @@
         }
       }
   });
-  
+    
 }());
+
+
+// show more show less button in matches webview
+document.querySelectorAll('.desc-toggle-btn').forEach(btn => {
+  const cell = btn.closest('.desc-cell');
+  const textSpan = cell.querySelector('.desc-text');
+  const fullDesc = btn.dataset.fulldesc;
+  const truncDesc = btn.dataset.truncdesc;
+
+  btn.addEventListener('click', () => {
+    const expanded = cell.classList.toggle('expanded');
+    if (expanded) {
+      textSpan.textContent = fullDesc;
+      btn.textContent = 'Show less';
+    } else {
+      textSpan.textContent = truncDesc;
+      btn.textContent = 'Show more';
+    }
+  });
+});

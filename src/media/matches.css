@@ -1,245 +1,173 @@
+/* Reset any default borders */
 * {
   border: none;
 }
 
-table {
-  width: 100%;
-}
-
+/* Code line styling */
 .code-line {
-  font-family: Courier;
+  font-family: Courier, monospace;
 }
 
+/* Button focus/hover resets */
 button:focus {
   outline: none;
 }
-
 button:hover {
   cursor: pointer;
 }
 
-.jump-to-code-btn {
-  display: inline;
-  font-size: 1.5em;
-  margin-left: 20px;
-  color: var(--vscode-button-foreground);
+.match-container {
+  position: relative;
 }
 
-.jump-to-code-btn:hover {
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75em;
+}
+
+/* Icon bar in the right corner */
+.icon-bar {
+  display: flex;
+  align-items: center;   /* <-- this is needed because we have different sizes of icons :D*/
+  gap: 0.5em;
+  position: absolute;
+  top: 0.75em;
+  right: 0.75em;
   cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  background-color: var(--vscode-editor-hoverHighlightBackground);
+  padding: 4px 6px;
+  border-radius: 4px;
+}
+
+/* icon-btn */
+.icon-bar .jump-to-code-btn,
+.icon-bar .falsePositive-btn,
+.icon-bar .saveForLater-btn {
+  margin: 0;              
+  font-size: 1.5em;       /* size of icons */
+  padding: 0.1em;         /* add a click area */
+  line-height: 1;   
+}
+
+.icon-bar .finding-btn {
+  margin: 0;
+  font-size: 1.7em;
+  padding: 0.1em;
+  line-height: 1;   
+}
+.icon-bar div:hover {
   color: var(--vscode-button-hover-foreground);
-  text-decoration: underline;
 }
 
-.finding-btn {
-  display: inline;
-  font-size: 2em;
-  margin-left: 20px;
-  color: var(--vscode-button-foreground);
-}
-
-.finding-btn:hover {
-  cursor: pointer;
-  color: var(--vscode-button-hover-foreground);
-  text-decoration: underline;
-}
-
-.falsePositive-btn {
-  display: inline;
-  font-size: 1.5em;
-  margin-left: 20px;
-  color: var(--vscode-button-foreground);
-}
-
-.falsePositive-btn:hover {
-  cursor: pointer;
-  color: var(--vscode-button-hover-foreground);
-  text-decoration: underline;
-}
-
-.saveForLater-btn {
-  display: inline;
-  font-size: 1.5em;
-  margin-left: 20px;
-  color: var(--vscode-button-foreground);
-}
-
+/*changes the scale a little bit to mimic a button*/
+.jump-to-code-btn:hover,
+.finding-btn:hover,
+.falsePositive-btn:hover,
 .saveForLater-btn:hover {
-  cursor: pointer;
-  color: var(--vscode-button-hover-foreground);
-  text-decoration: underline;
+  background-color: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  text-decoration: none;
+  transform: scale(1.05);
+  border-radius: 4px;
 }
 
+/*same when clicked*/
+.jump-to-code-btn:active,
+.finding-btn:active,
+.falsePositive-btn:active,
+.saveForLater-btn:active {
+  transform: scale(0.95);
+  background-color: var(--vscode-button-hoverBackground);
+}
+
+
+
+/* Highlight matched code */
 .match-highlight {
   color: var(--vscode-errorForeground);
 }
 
+/* File path highlight */
 .file-highlight {
   color: var(--vscode-foreground);
 }
 
-#toggle {
-  color: var(--vscode-foreground);
-  text-decoration: underline;
-}
-
-#toggle:hover {
-  cursor: pointer;
-  color: var(--vscode-foreground);
-}
-
+/* Container for each match (card style) */
 .match-container {
-  border: 1px solid var(--vscode-editorWidget-border);
-  border-radius: 5px;
-  padding: 10px;
-  margin-bottom: 15px;
+  margin-bottom: 1.5em;
+  padding: 1em;
   background-color: var(--vscode-editorWidget-background);
-  color: var(--vscode-editor-foreground);
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.4);
-}
-
-#status-selection {
-  width: 200px;
-  padding: 8px;
-  font-size: 14px;
   border: 1px solid var(--vscode-editorWidget-border);
-  border-radius: 5px;
-  background-color: var(--vscode-editorWidget-background);
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   color: var(--vscode-editor-foreground);
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
 }
 
-#status-selection:hover {
-  border-color: var(--vscode-focusBorder);
+/* Table inside match container */
+.match-container table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;     /* vertical gaps between rows */
+  margin: 0.5em 0;           /* tighten up top/bottom */
 }
 
-#status-selection:focus {
-  outline: none;
-  border-color: var(--vscode-focusBorder);
-  box-shadow: 0 0 5px var(--vscode-focusBorder);
+/* Table rows and cells */
+.match-container tr {
+  display: table-row;
+}
+.match-container td {
+  padding: 8px 12px;
+  vertical-align: top;
 }
 
-#criticality-selection {
-  width: 200px;
-  padding: 8px;
-  font-size: 14px;
-  border: 1px solid var(--vscode-editorWidget-border);
-  border-radius: 5px;
-  background-color: var(--vscode-editorWidget-background);
+/* Label column */
+.match-container td:first-child {
+  width: 130px;
+  font-weight: 600;
+  color: var(--vscode-editorCodeLens-foreground);
+  white-space: nowrap;
+}
+
+/* Data column styling */
+.match-container td:nth-child(2) {
+  background-color: var(--vscode-editor-hoverHighlightBackground);
+  border-radius: 4px;
   color: var(--vscode-editor-foreground);
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  transition: background-color 0.2s;
+}
+.match-container td:nth-child(2):hover {
+  background-color: var(--vscode-list-hoverBackground);
 }
 
-#criticality-selection:hover {
-  border-color: var(--vscode-focusBorder);
-}
-
-#criticality-selection:focus {
-  outline: none;
-  border-color: var(--vscode-focusBorder);
-  box-shadow: 0 0 5px var(--vscode-focusBorder);
-}
-
-#category-selection {
-  width: 200px;
-  padding: 8px;
-  font-size: 14px;
-  border: 1px solid var(--vscode-editorWidget-border);
-  border-radius: 5px;
-  background-color: var(--vscode-editorWidget-background);
-  color: var(--vscode-editor-foreground);
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-}
-
-#category-selection:hover {
-  border-color: var(--vscode-focusBorder);
-}
-
-#category-selection:focus {
-  outline: none;
-  border-color: var(--vscode-focusBorder);
-  box-shadow: 0 0 5px var(--vscode-focusBorder);
-}
-
-#rules-selection {
-  width: 200px;
-  padding: 8px;
-  font-size: 14px;
-  border: 1px solid var(--vscode-editorWidget-border);
-  border-radius: 5px;
-  background-color: var(--vscode-editorWidget-background);
-  color: var(--vscode-editor-foreground);
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-}
-
-#rules-selection:hover {
-  border-color: var(--vscode-focusBorder);
-}
-
-#rules-selection:focus {
-  outline: none;
-  border-color: var(--vscode-focusBorder);
-  box-shadow: 0 0 5px var(--vscode-focusBorder);
-}
-
-.comment-btn {
-  display: inline;
-  font-size: 1.5em;
-  margin-left: 20px;
-  color: var(--vscode-button-foreground);
-}
-
-.comment-btn:hover {
-  cursor: pointer;
-  color: var(--vscode-button-hover-foreground);
-  text-decoration: underline;
-}
-
-/*
-Make the input fully transparent
---> looks like the other table columns
-*/
+/* Comment input */
 .comment-input {
   background-color: transparent;
   border: transparent;
-  color: white;
-  outline: none;
-}
-
-
-#file-view {
-  width: 200px;
-  padding: 8px;
-  font-size: 14px;
-  border: 1px solid var(--vscode-editorWidget-border);
-  border-radius: 5px;
-  background-color: var(--vscode-editorWidget-background);
   color: var(--vscode-editor-foreground);
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-}
-
-#file-view:hover {
-  border-color: var(--vscode-focusBorder);
-}
-
-#file-view:focus {
   outline: none;
-  border-color: var(--vscode-focusBorder);
-  box-shadow: 0 0 5px var(--vscode-focusBorder);
+  width: 100%;
+  padding: 4px 6px;
+  font-family: inherit;
+  font-size: 0.9em;
+  overflow: hidden;   /* hides the scrollbar --> cleaner*/
+  resize: none;       /* disables manual resizing - also removes some things*/
 }
 
-.info-icon {
-  cursor: help;
-  font-size: 14px;
-  margin-left: 5px;
-  color: var(--vscode-editorLink-foreground);
+.comment-input:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
 }
 
+.comment-cell {
+  position: relative;
+}
+
+
+/* Pagination controls */
 .pagination {
   display: flex;
   align-items: center;
@@ -250,14 +178,12 @@ Make the input fully transparent
   border: 1px solid var(--vscode-editorWidget-border);
   border-radius: 5px;
   background-color: var(--vscode-editorWidget-background);
-  color: var(--vscode-editor-foreground);
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
-
-.pagination span {
-  font-size: 14px;
+.pagination span.page-info {
+  font-weight: bold;
+  padding: 0 10px;
 }
-
 .pagination button {
   padding: 5px 10px;
   font-size: 14px;
@@ -268,12 +194,10 @@ Make the input fully transparent
   cursor: pointer;
   transition: background-color 0.2s, box-shadow 0.2s;
 }
-
 .pagination button:hover {
   background-color: var(--vscode-button-hoverBackground);
   box-shadow: 0 0 5px var(--vscode-focusBorder);
 }
-
 .pagination button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -282,7 +206,70 @@ Make the input fully transparent
   border-color: var(--vscode-editorWidget-border);
 }
 
-.page-info {
-  font-weight: bold;
-  padding: 0 10px;
+/* Dropdown selects */
+#status-selection,
+#criticality-selection,
+#category-selection,
+#rules-selection,
+#file-view {
+  width: 200px;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid var(--vscode-editorWidget-border);
+  border-radius: 5px;
+  background-color: var(--vscode-editorWidget-background);
+  color: var(--vscode-editor-foreground);
+  cursor: pointer;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s;
+}
+#status-selection:hover,
+#criticality-selection:hover,
+#category-selection:hover,
+#rules-selection:hover,
+#file-view:hover {
+  border-color: var(--vscode-focusBorder);
+}
+#status-selection:focus,
+#criticality-selection:focus,
+#category-selection:focus,
+#rules-selection:focus,
+#file-view:focus {
+  outline: none;
+  border-color: var(--vscode-focusBorder);
+  box-shadow: 0 0 5px var(--vscode-focusBorder);
+}
+
+/* Info icon in metadata */
+.info-icon {
+  cursor: help;
+  font-size: 14px;
+  margin-left: 5px;
+  color: var(--vscode-editorLink-foreground);
+}
+
+/* Description toggle (Show more/less) */
+/* make sure the cell is the positioning context */
+.desc-cell {
+  position: relative;
+  padding-right: 3.5em;    /* reserve room for the button */
+}
+
+/* absolutely pin any toggle button inside the cell */
+.desc-cell .desc-toggle-btn {
+  position: absolute;
+  top: 0.5em;             /* small gap from the top edge */
+  right: 0.5em;            /* same gap from right edge */
+  transform: none;         /* no vertical centering */
+
+  background: transparent;
+  border: none;
+  color: var(--vscode-button-foreground);
+  cursor: pointer;
+  font-size: 0.9em;
+  padding: 2px 4px;
+  border-radius: 3px;
+  transition: background-color 0.2s;
+}
+.desc-cell .desc-toggle-btn:hover {
+  background-color: var(--vscode-button-hoverBackground);
 }

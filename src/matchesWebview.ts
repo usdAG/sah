@@ -173,28 +173,50 @@ const generateMatchesWebview = (
     const highlightedCodeLine = parsedPattern.exec(m.lineContent);
     const relativePath = m.path.replace(vscode.workspace.rootPath !== undefined ? vscode.workspace.rootPath : '', '.');
 
+    // modfication for the description 
+    const MAX_DESC_LEN = 80;
+    const fullDesc = sanitizeContent(m.pattern.description);
+    const truncatedDesc =
+    fullDesc.length > MAX_DESC_LEN
+    ? fullDesc.slice(0, MAX_DESC_LEN) + '...'
+    : fullDesc;
+
     // construct HTML for single match
     matchesString += `
     <div id="${m.matchId}" class="match-container">
-    <div><b>Match found in file </b><span class="file-highlight">${relativePath}</span><b>, line ${m.lineNumber}:</b>
-    <div class="jump-to-code-btn" data-match="${m.matchId}" title="Jump to code">&#8631;</div>
-    <div class="finding-btn" data-match="${m.matchId}" title="Finding">&#8982;</div>
-    <div class="falsePositive-btn" data-match="${m.matchId}" title="False Positive">&#10006;</div>
-    <div class="saveForLater-btn" data-match="${m.matchId}" title="Save for later">&#128427;</div>
-</div>
+      <div>
+        <b>Match found in file </b>
+        <span class="file-highlight">${relativePath}</span>
+        <b>, line ${m.lineNumber}:</b>
+      </div>
+        <div class="icon-bar">      
+        <div class="jump-to-code-btn" data-match="${m.matchId}" title="Jump to code">&#8631;</div>
+        <div class="finding-btn" data-match="${m.matchId}" title="Finding">&#8982;</div>
+        <div class="falsePositive-btn" data-match="${m.matchId}" title="False Positive">&#10006;</div>
+        <div class="saveForLater-btn" data-match="${m.matchId}" title="Save for later">&#128427;</div>
+    </div>
     <p>
       <div class="code-line">${sanitizeContent(m.lineContent)
         .replace(highlightedCodeLine !== null ? highlightedCodeLine[0] : '', (str) => `<span class="match-highlight">${str}</span>`)}</div>
     </p>
-    <table>
+    <table class="match-meta">
       <tr>
         <td>Type:</td>
         <td>${m.pattern.id}</td>
-      </tr>
-      <tr>
-        <td>Description:</td>
-        <td>${m.pattern.description}</td>
-      </tr>
+      </tr>      
+      <td>Description:</td>
+      <td class="desc-cell">
+        <span class="desc-text">${truncatedDesc}</span>
+        ${
+          fullDesc.length > MAX_DESC_LEN
+            ? `<button
+                  class="desc-toggle-btn"
+                  data-fulldesc="${fullDesc.replace(/"/g, '&quot;')}"
+                  data-truncdesc="${truncatedDesc.replace(/"/g, '&quot;')}"
+                >Show more</button>`
+            : ''
+        }
+      </td>      
       <tr>
         <td>Criticality:</td>
         <td>${m.pattern.criticality}</td>
