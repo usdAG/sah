@@ -219,7 +219,6 @@ button:hover {
 /* Dropdown selects */
 #status-selection,
 #criticality-selection,
-#category-selection,
 #rules-selection,
 #file-view {
   width: 200px;
@@ -234,7 +233,6 @@ button:hover {
 }
 #status-selection:hover,
 #criticality-selection:hover,
-#category-selection:hover,
 #rules-selection:hover,
 #file-view:hover {
   border-color: var(--vscode-focusBorder);
@@ -242,7 +240,6 @@ button:hover {
 }
 #status-selection:focus,
 #criticality-selection:focus,
-#category-selection:focus,
 #rules-selection:focus,
 #file-view:focus {
   outline: none;

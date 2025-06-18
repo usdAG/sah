@@ -11,7 +11,6 @@ const sanitizeContent = (string: string) => {
 
 let selectedStatus = "unprocessed"
 let selectedCriticality = 0;
-let selectedCategory = "all";
 let selectedRule = "all";
 let excludedPath: string[] = [];
 
@@ -19,14 +18,12 @@ let excludedPath: string[] = [];
 export const setStatus = (newStatus: string, panel: vscode.WebviewPanel) => {
   selectedStatus = newStatus;
   selectedCriticality = 0;
-  selectedCategory = "all"
   selectedRule = "all"
   panel.webview.postMessage({
     command: 'updateState',
     newState: {
       status: selectedStatus,
       criticality: selectedCriticality,
-      category: selectedCategory,
       rule: selectedRule
     }
   });
@@ -35,28 +32,12 @@ export const setStatus = (newStatus: string, panel: vscode.WebviewPanel) => {
 
 export const setCriticality = (newCriticality: number, panel: vscode.WebviewPanel) => {
   selectedCriticality = newCriticality;
-  selectedCategory = "all"
   selectedRule = "all"
   panel.webview.postMessage({
     command: 'updateState',
     newState: {
       status: selectedStatus,
       criticality: selectedCriticality,
-      category: selectedCategory,
-      rule: selectedRule
-    }
-  });
-};
-
-export const setCategory = (newCategory: string, panel: vscode.WebviewPanel) => {
-  selectedCategory = newCategory;
-  selectedRule = "all"
-  panel.webview.postMessage({
-    command: 'updateState',
-    newState: {
-      status: selectedStatus,
-      criticality: selectedCriticality,
-      category: selectedCategory,
       rule: selectedRule
     }
   });
@@ -69,7 +50,6 @@ export const setRule = (newRule: string, panel: vscode.WebviewPanel) => {
     newState: {
       status: selectedStatus,
       criticality: selectedCriticality,
-      category: selectedCategory,
       rule: selectedRule
     }
   });
@@ -79,25 +59,15 @@ export const setExcludedPath = (newExcludedPaths: string[]) => {
   excludedPath = [...newExcludedPaths]; // Overwrite with new values
 };
  
-function generateCategorySelection(matches: Array<Match>) {
-  console.debug("start generateCategorySelection")
-  // Extract unique categories from array using Set
-  // then convert back to an array and sort alphabetically
-  const categories = Array.from(new Set(matches.map((m) => m.pattern.description))).sort();
 
-  return `
-    <option value="all" id="category-selection">All Categories</option>
-    ${categories.map((category) => `<option value="${category}">${category}</option>`).join('')}
-  `;
-}
 
 function generateRuleSelection(rules: Array<Match>) {
   console.debug("start generateRuleSelection")
-  const categories = Array.from(new Set(rules.map((m) => m.pattern.pattern))).sort();
+  const _rules = Array.from(new Set(rules.map((m) => m.pattern.pattern))).sort();
 
   return `
     <option value="all" id="rules-selection">All Rules/Patterns</option>
-    ${categories.map((rules) => `<option value="${rules}">${rules}</option>`).join('')}
+    ${_rules.map((rules) => `<option value="${rules}">${rules}</option>`).join('')}
   `;
 }
 
@@ -107,7 +77,7 @@ const generateMatchesWebview = (
   let matchesString: string = '';
   // create a copy of matches for later use - CategorySelection with all matches
   let _matches = [...matches];
-  console.debug(`filter: ${selectedStatus}|${selectedCriticality}|${selectedCategory}|${selectedRule}|`)
+  console.debug(`filter: ${selectedStatus}|${selectedCriticality}|${selectedRule}|`)
 
   // Filter for Status
   if (selectedStatus !== "all") {
@@ -133,15 +103,6 @@ const generateMatchesWebview = (
     // else filter _matches dependent on selected criticality
     _matches = selectedCriticality == 0 ? _matches : _matches.filter((m) => m.pattern.criticality == selectedCriticality);
     console.debug('Criticality filter with', selectedCriticality);      
-  }
-  console.debug(_matches)
-
-  const categorySelectionHTML = generateCategorySelection(_matches)
-  
-  // Filter for Category
-  if (selectedCategory !== "all") {
-    console.debug('Category filter with', selectedCategory); 
-    _matches = _matches.filter((m) => m.pattern.description == selectedCategory);    
   }
   console.debug(_matches)
 
@@ -278,9 +239,6 @@ const generateMatchesWebview = (
     <option value="5">Criticality 5</options>
     <option value="6">Ascending Order</options>
     <option value="7">Descending Order</options>
-  </select>
-  <select id="category-selection">
-    ${categorySelectionHTML}
   </select>
   <select id="rules-selection">
     ${ruleSelectionHTML}
