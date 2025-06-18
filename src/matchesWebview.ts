@@ -151,10 +151,12 @@ const generateMatchesWebview = (
     console.debug('Rule filter with', selectedRule); 
     _matches = _matches.filter((m) => m.pattern.pattern == selectedRule);    
   }
-  console.debug("Filter for Excluded from FileView")
   // Filter for Excluded from FileView
   if (excludedPath.length > 0) {
+    console.debug("Filter for Excluded from FileView")
     _matches = _matches.filter((m) => !excludedPath.includes(m.path));
+  } else {
+    console.debug("Not Filtering for Excluded from FileView (excludedPath <= 0)")
   }
 
   console.debug("Generationg HTML with matches")

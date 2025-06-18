@@ -52,11 +52,19 @@ export const activate = (context: vscode.ExtensionContext) => {
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("fileExplorer.showMatchesIn",(node: FileNode) => 
-      fileExplorerProvider.onlyShowMatchesIn(node.filePath)
+    vscode.commands.registerCommand("fileExplorer.showMatchesForFolder",(uri: vscode.Uri) => 
+      fileExplorerProvider.showMatchesForFolder(uri.fsPath)
     )
   )
 
+  context.subscriptions.push(
+    vscode.commands.registerCommand("fileExplorer.showMatchesForFile", (uri: vscode.Uri) => {
+      if (uri && uri.fsPath) {
+          //vscode.window.showInformationMessage(`Showing matches for: ${uri.fsPath}`);
+          fileExplorerProvider.showMatchesForFile(uri.fsPath);   
+      }
+    })
+  );
   context.subscriptions.push(
     vscode.commands.registerCommand("fileExplorer.toggleHidden", () => {
       fileExplorerProvider.toggleExcluded();    
@@ -79,14 +87,7 @@ export const activate = (context: vscode.ExtensionContext) => {
     }),
   ) 
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand("fileExplorer.showMatchesForFile", (uri: vscode.Uri) => {
-      if (uri && uri.fsPath) {
-          //vscode.window.showInformationMessage(`Showing matches for: ${uri.fsPath}`);
-          fileExplorerProvider.showMatchesForFile(uri.fsPath);   
-      }
-    })
-  );
+
   /* End Register Tree View */
   const activePanel = () => {
     if (active) {

@@ -95,7 +95,13 @@ export class FileExplorerProvider implements vscode.TreeDataProvider<FileNode> {
   // Helper to update the view and call showMatchesList (the Webview)
   private updateView(): void {
     this.refresh();
-    setExcludedPath(Array.from(this.excludedPaths));
+    // Convert all excludedPaths to relative paths before setting,
+    // because the excludedPaths are not matched agains relative Paths 
+    const relExcludedPaths = Array.from(this.excludedPaths).map(p =>
+      path.isAbsolute(p) ? path.relative(this.workspaceRoot, p) : p
+    );
+    console.debug("updateView REL:", relExcludedPaths);
+    setExcludedPath(relExcludedPaths);
     vscode.commands.executeCommand('extension.showMatchesList');
   }
 
@@ -110,15 +116,6 @@ export class FileExplorerProvider implements vscode.TreeDataProvider<FileNode> {
     this.updateView();
   }
 
-
-  // Shows only matches in a defined subtree. Excludes all other paths.
-  onlyShowMatchesIn(filePath: string){
-    const allNodes = this.getAllNodes(this.workspaceRoot);
-    const subTree = new Set(this.getAllNodes(filePath));
-    this.excludedPaths = new Set(allNodes.filter(node => !subTree.has(node)));
-    this.updateView();
-  }
-
   // Remove a file/folder from the exclusion - if its a folder --> recursively unexclude all its children
   unexclude(filePath: string) {
     if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
@@ -129,19 +126,30 @@ export class FileExplorerProvider implements vscode.TreeDataProvider<FileNode> {
     }
     this.updateView();
   }
-  
+
   // Restrict the view to only show the chain (folders) that lead to the target file
   // Get chain of paths from the workspace root to the target file
   // Exclude all nodes that are not in the chain
   // Done :D
   showMatchesForFile(filePath: string) {
-    vscode.window.showInformationMessage(`Processing matches for: ${filePath}`);
+    console.debug("showMatchesForFile:", filePath)
     const allNodes = this.getAllNodes(this.workspaceRoot);    
     const chainPaths = this.getChainPaths(filePath);    
     this.excludedPaths = new Set(allNodes.filter(node => !chainPaths.has(node)));
     this.updateView();
   }
 
+  // Shows only matches in a defined subtree. Excludes all other paths.
+  showMatchesForFolder(filePath: string){
+    console.debug("showMatchesForFolder:", filePath)
+    const allNodes = this.getAllNodes(this.workspaceRoot);
+    const subTree = new Set(this.getAllNodes(filePath));
+    this.excludedPaths = new Set(allNodes.filter(node => !subTree.has(node)));
+    this.updateView();
+  }
+
+  
+  
   // Recursively get all file and folder paths from the given directory
   // Call reddirSync with withFileTypes to get an array
   // Append to nodes if its a directory call function recursive
@@ -161,7 +169,7 @@ export class FileExplorerProvider implements vscode.TreeDataProvider<FileNode> {
   }
 
   // Build a set of paths representing the chain from the workspace root to the target
-  // strip the dirname for the resolved path --> do this until you are the root
+  // strip the dirname for the resolved path --> do this until you are at the root
   // --> return chain
   private getChainPaths(target: string): Set<string> {
     const chain = new Set<string>();

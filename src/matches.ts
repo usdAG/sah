@@ -119,6 +119,7 @@ export function deduplicateMatches(matches: Array<Match>): Array<Match> {
     console.debug(`Processing: ${key} - ${match.detectionType}`);
 
     if (seen.has(key)) {
+      // todo remove this += detectionType (there is only semgrep)
       seen.get(key).detectionType += `, ${match.detectionType}`;
       return false;
     }

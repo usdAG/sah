@@ -43,8 +43,8 @@
 				"title": "Unexclude File/Folder"
 			},
 			{
-				"command": "fileExplorer.showMatchesIn",
-				"title": "Show Matches in this path"
+				"command": "fileExplorer.showMatchesForFolder",
+				"title": "SAH Only show Matches in this path"
 			},
       {
         "command": "fileExplorer.toggleHidden",
@@ -60,7 +60,7 @@
       },
       {
         "command": "fileExplorer.showMatchesForFile",
-        "title": "SAH Only show Matches for this file/folder"
+        "title": "SAH Only show Matches for this file"
       },
       {
         "command": "fileExplorer.resetExclusion",
@@ -89,11 +89,11 @@
           "when": "view == fileExplorer && !fileExplorer:showExcluded",
           "group": "navigation"
         },
-		{
-			"command": "fileExplorer.resetExclusionShortText",
-			"when": "view == fileExplorer",
-			"group": "navigation"
-		}
+        {
+          "command": "fileExplorer.resetExclusionShortText",
+          "when": "view == fileExplorer",
+          "group": "navigation"
+        }
       ],
 			"view/item/context": [
 				{
@@ -105,22 +105,23 @@
 					"command": "fileExplorer.unexclude",
 					"when": "view == fileExplorer",
 					"group": "navigation"
-				},
-				{
-					"command": "fileExplorer.showMatchesIn",
-					"when": "view == fileExplorer",
-					"group": "navigation"
 				}
 			],
       "explorer/context": [        
         {
           "command": "fileExplorer.showMatchesForFile",
+          "when": "explorerResourceIsFolder == false",
+          "group": "SAH@1"
+        },
+        {
+          "command": "fileExplorer.showMatchesForFolder",
+          "when": "explorerResourceIsFolder == true",
           "group": "SAH@1"
         },
         {
           "command": "fileExplorer.resetExclusion",
           "group": "SAH@2"
-        }    
+        }
       ]
 		},
 		"views": {
