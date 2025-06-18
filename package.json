@@ -66,9 +66,9 @@
         "command": "fileExplorer.resetExclusion",
         "title": "SAH Reset the Exclusion of all files/folders"
       },
-	  {
+	    {
         "command": "fileExplorer.resetExclusionShortText",
-        "title": "Reset Excludes"
+        "title": "SAH Reset Excludes"
       },
       {
         "command": "extension.deduplicateMatches",
@@ -115,11 +115,11 @@
       "explorer/context": [        
         {
           "command": "fileExplorer.showMatchesForFile",
-          "group": "navigation@1"
+          "group": "SAH@1"
         },
         {
           "command": "fileExplorer.resetExclusion",
-          "group": "navigation@2"
+          "group": "SAH@2"
         }    
       ]
 		},
