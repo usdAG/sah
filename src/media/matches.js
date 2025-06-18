@@ -8,7 +8,6 @@
 
   const statusSelection = document.getElementById('status-selection');
   const criticalitySelection = document.getElementById('criticality-selection');
-  const categorySelect = document.getElementById("category-selection");
   const ruleSelect = document.getElementById("rules-selection");
   const commentInput = document.getElementsByClassName('comment-input');
   const fileViewBtn = document.getElementById('file-view');
@@ -69,9 +68,6 @@
   if(state != null && state.criticality != null){
     criticalitySelection.value = state.criticality;
   }
-  if(state != null && state.category != null){
-    categorySelect.value = state.category;
-  }
   if(state != null && state.rule != null){
     ruleSelect.value = state.rule;
   }
@@ -89,14 +85,6 @@
     vscode.postMessage({
       command: 'setCriticality',
       criticality: criticalitySelection.value,
-    });
-  });
-
-  categorySelect.addEventListener("input", () => {
-    vscode.setState({...state, category: categorySelect.value});
-    vscode.postMessage({
-      command: "setCategory",
-      category: categorySelect.value
     });
   });
 
@@ -133,9 +121,6 @@
         }
         if (message.newState.criticality) {
             criticalitySelection.value = message.newState.criticality;
-        }
-        if (message.newState.category) {
-            categorySelect.value = message.newState.category;
         }
         if (message.newState.rule) {
             ruleSelect.value = message.newState.rule;

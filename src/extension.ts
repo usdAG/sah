@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import generateMatchesWebview, { setCategory, setRule, setStatus } from './matchesWebview';
+import generateMatchesWebview, { setRule, setStatus } from './matchesWebview';
 import { setCriticality } from './matchesWebview';
 import {
   addComment,
@@ -142,11 +142,7 @@ export const activate = (context: vscode.ExtensionContext) => {
           case 'setStatus':
             setStatus(message.status,panel);
             vscode.commands.executeCommand('extension.showMatchesList');
-            break;
-          case 'setCategory':
-            setCategory(message.category,panel);
-            vscode.commands.executeCommand('extension.showMatchesList');
-            break;
+            break;          
           case 'setRule':
             setRule(message.rule,panel);
             vscode.commands.executeCommand('extension.showMatchesList');
