@@ -19,9 +19,14 @@
           <input type="text" id="semgrepScanImportPath" placeholder="Enter the path to your Semgrep Scan">
         </div>        
         <button type="button" id="semgrepScanImportPathBtn">Import</button> 
-        <label for="semgrepPath" id="semgrepPathLabel">WARNING: This shows the first scanned file of the semgrep scan.
-         The path is NOT relative to the project root folder! SAH however needs the relative path.
-         Modify you Semgrep scan to only include relative paths or rescan with SAH! </label>
+        <label for="semgrepPath" id="semgrepPathLabel">
+          <strong>Note:</strong> The displayed path is from the first scanned file in your Semgrep scan.<br>
+          This path may <strong>not</strong> be relative to your project root. For SAH to work correctly, you need relative paths.<br>
+          <br>
+          To ensure relative paths in your Semgrep results, run your scan from the project root <i>without</i> specifying an absolute path.<br>
+          <br>
+          <strong>Example:</strong> <code>semgrep scan --config p/python --json-output 20250618_semgrep_p_python.json</code>
+        </label>
         <input type="text" id="semgrepPath" placeholder="" disabled>
         <span id="pathStatus" style="margin-left: 10px;"></span>
     </form>
@@ -31,14 +36,37 @@
       <h3>Start a Semgrep Scan</h3>
 
       <!-- Config Path -->
-      <label for="configPath">Config to include:</label>
+      <label for="configPath">
+        Config to include
+        <span class="info-tooltip">
+          <span class="info-icon" tabindex="0" aria-label="Help">&#x1F6C8;</span>
+          <span class="tooltip" id="configPathTooltip">
+            Choose a Semgrep configuration to control which rules are run.
+            You can use your own rules or select official rule packs from the Semgrep Registry.<br>
+            See examples and browse available configs at
+            <a href="https://semgrep.dev/r" target="_blank">semgrep.dev/r</a>.
+          </span>
+          </span><span class="label-colon">:</span>
+        </span>
+      </label>
       <div class="input-wrapper">
         <button type="button" id="configPathWizard" class="folder-btn">Select File</button>
         <input type="text" id="configPath" value="auto">
       </div>
 
       <!-- Output Path -->
-      <label for="outputPath">Output destination (optional):</label>
+      <label for="outputPath">Output destination
+        <span class="info-tooltip">
+          <span class="info-icon" tabindex="0" aria-label="Help">&#x1F6C8;</span>
+          <span class="tooltip" id="configPathTooltip">
+            The output filename will be auto-generated if left blank.<br>
+            It combines the current date, the word "semgrep", and the ruleset name (e.g., <code>20240612_semgrep_auto.json</code>).<br>
+            The file will be saved at the project root, making it easy to find and share with others.<br>
+            This can be especially helpful for large projects or long-running scans.
+          </span>
+          </span><span class="label-colon">:</span>
+        </span>
+      </label>
       <div class="input-wrapper">
         <button type="button" id="outputPathWizard" class="folder-btn">Select Folder</button>  
         <input type="text" id="outputPath" placeholder="<Date in YYYYMMDD>_semgrep_<ruleset>.json">

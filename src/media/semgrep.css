@@ -118,3 +118,45 @@ margin-top: 5px;
 #semgrepPathLabel{
   visibility: hidden;
 }
+/* tooltip info for config to inlcude */
+
+.info-tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.info-icon {
+  cursor: pointer;
+  margin-left: 0px;
+  font-size: 1.1em;
+  color: #4285f4;
+  outline: none;
+}
+
+.tooltip {
+  display: none;
+  position: absolute;
+  left: 120%;   /* places right of icon, adjust as needed */
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 100;
+  background: #222;
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 7px;
+  font-size: 13px;
+  white-space: normal;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.22);
+  min-width: 240px;
+  max-width: 320px;
+}
+
+.info-tooltip:hover .tooltip,
+.info-tooltip:focus-within .tooltip {
+  display: block;
+}
+
+.tooltip a {
+  color: #99c6fc;
+  text-decoration: underline;
+}
