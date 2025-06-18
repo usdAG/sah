@@ -35,16 +35,24 @@
 				"title": "SAH Refresh File Explorer"
 			},
 			{
-				"command": "fileExplorer.exclude",
-				"title": "Exclude File/Folder"
+				"command": "fileExplorer.excludeFile",
+				"title": "SAH Exclude File"
+			},
+      {
+				"command": "fileExplorer.excludeFolder",
+				"title": "SAH Exclude Folder"
 			},
 			{
-				"command": "fileExplorer.unexclude",
-				"title": "Unexclude File/Folder"
+				"command": "fileExplorer.unexcludeFile",
+				"title": "SAH Unexclude File"
+			},
+      {
+				"command": "fileExplorer.unexcludeFolder",
+				"title": "SAH Unexclude Folder"
 			},
 			{
-				"command": "fileExplorer.showMatchesIn",
-				"title": "Show Matches in this path"
+				"command": "fileExplorer.showMatchesForFolder",
+				"title": "SAH Only show Matches in this path"
 			},
       {
         "command": "fileExplorer.toggleHidden",
@@ -60,15 +68,15 @@
       },
       {
         "command": "fileExplorer.showMatchesForFile",
-        "title": "SAH Only show Matches for this file/folder"
+        "title": "SAH Only show Matches for this file"
       },
       {
         "command": "fileExplorer.resetExclusion",
         "title": "SAH Reset the Exclusion of all files/folders"
       },
-	  {
+	    {
         "command": "fileExplorer.resetExclusionShortText",
-        "title": "Reset Excludes"
+        "title": "SAH Reset Excludes"
       },
       {
         "command": "extension.deduplicateMatches",
@@ -89,25 +97,30 @@
           "when": "view == fileExplorer && !fileExplorer:showExcluded",
           "group": "navigation"
         },
-		{
-			"command": "fileExplorer.resetExclusionShortText",
-			"when": "view == fileExplorer",
-			"group": "navigation"
-		}
+        {
+          "command": "fileExplorer.resetExclusionShortText",
+          "when": "view == fileExplorer",
+          "group": "navigation"
+        }
       ],
 			"view/item/context": [
 				{
-					"command": "fileExplorer.exclude",
+					"command": "fileExplorer.excludeFile",
 					"when": "view == fileExplorer",
 					"group": "navigation"
 				},
 				{
-					"command": "fileExplorer.unexclude",
+					"command": "fileExplorer.unexcludeFile",
+					"when": "view == fileExplorer",
+					"group": "navigation"
+				},
+        {
+					"command": "fileExplorer.excludeFolder",
 					"when": "view == fileExplorer",
 					"group": "navigation"
 				},
 				{
-					"command": "fileExplorer.showMatchesIn",
+					"command": "fileExplorer.unexcludeFolder",
 					"when": "view == fileExplorer",
 					"group": "navigation"
 				}
@@ -115,12 +128,38 @@
       "explorer/context": [        
         {
           "command": "fileExplorer.showMatchesForFile",
-          "group": "navigation@1"
+          "when": "explorerResourceIsFolder == false",
+          "group": "SAH@1"
+        },
+        {
+          "command": "fileExplorer.showMatchesForFolder",
+          "when": "explorerResourceIsFolder == true",
+          "group": "SAH@1"
+        },
+        {
+          "command": "fileExplorer.excludeFile",
+          "when": "explorerResourceIsFolder == false",
+          "group": "SAH@2"
+        },
+        {
+          "command": "fileExplorer.excludeFolder",
+          "when": "explorerResourceIsFolder == true",
+          "group": "SAH@2"
+        },        
+        {
+          "command": "fileExplorer.unexcludeFile",
+          "when": "explorerResourceIsFolder == false",
+          "group": "SAH@3"
+        },
+        {
+          "command": "fileExplorer.unexcludeFolder",
+          "when": "explorerResourceIsFolder == true",
+          "group": "SAH@3"
         },
         {
           "command": "fileExplorer.resetExclusion",
-          "group": "navigation@2"
-        }    
+          "group": "SAH@4"
+        }
       ]
 		},
 		"views": {

@@ -12,7 +12,7 @@ import {
 import generateStartWebview from './startWebview';
 import generateSemgrepWebview from './semgrepWebview';
 import { startImportSemgrepJson, isRelative, finalImportSemgrepJson, handlePathSelection, startSemgrepScan,} from './semgrep';
-import { FileExplorerProvider, FileNode } from './fileView';
+import { FileExplorerProvider } from './fileView';
 
 
 // Activate the extension.
@@ -40,23 +40,43 @@ export const activate = (context: vscode.ExtensionContext) => {
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("fileExplorer.exclude", (node: FileNode) =>
-      fileExplorerProvider.exclude(node.filePath)
+    vscode.commands.registerCommand("fileExplorer.excludeFile", (uri: vscode.Uri) =>
+      fileExplorerProvider.excludeFile(uri.fsPath)
     )
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("fileExplorer.unexclude", (node: FileNode) =>
-      fileExplorerProvider.unexclude(node.filePath)
+    vscode.commands.registerCommand("fileExplorer.excludeFolder", (uri: vscode.Uri) =>
+      fileExplorerProvider.excludeFolder(uri.fsPath)
     )
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("fileExplorer.showMatchesIn",(node: FileNode) => 
-      fileExplorerProvider.onlyShowMatchesIn(node.filePath)
+    vscode.commands.registerCommand("fileExplorer.unexcludeFile", (uri: vscode.Uri) =>
+      fileExplorerProvider.unexcludeFile(uri.fsPath)
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("fileExplorer.unexcludeFolder", (uri: vscode.Uri) =>
+      fileExplorerProvider.unexcludeFolder(uri.fsPath)
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("fileExplorer.showMatchesForFolder",(uri: vscode.Uri) => 
+      fileExplorerProvider.showMatchesForFolder(uri.fsPath)
     )
   )
 
+  context.subscriptions.push(
+    vscode.commands.registerCommand("fileExplorer.showMatchesForFile", (uri: vscode.Uri) => {
+      if (uri && uri.fsPath) {
+          //vscode.window.showInformationMessage(`Showing matches for: ${uri.fsPath}`);
+          fileExplorerProvider.showMatchesForFile(uri.fsPath);   
+      }
+    })
+  );
   context.subscriptions.push(
     vscode.commands.registerCommand("fileExplorer.toggleHidden", () => {
       fileExplorerProvider.toggleExcluded();    
@@ -79,14 +99,7 @@ export const activate = (context: vscode.ExtensionContext) => {
     }),
   ) 
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand("fileExplorer.showMatchesForFile", (uri: vscode.Uri) => {
-      if (uri && uri.fsPath) {
-          //vscode.window.showInformationMessage(`Showing matches for: ${uri.fsPath}`);
-          fileExplorerProvider.showMatchesForFile(uri.fsPath);   
-      }
-    })
-  );
+
   /* End Register Tree View */
   const activePanel = () => {
     if (active) {

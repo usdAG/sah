@@ -95,53 +95,67 @@ export class FileExplorerProvider implements vscode.TreeDataProvider<FileNode> {
   // Helper to update the view and call showMatchesList (the Webview)
   private updateView(): void {
     this.refresh();
-    setExcludedPath(Array.from(this.excludedPaths));
+    // Convert all excludedPaths to relative paths before setting,
+    // because the excludedPaths are not matched agains relative Paths 
+    const relExcludedPaths = Array.from(this.excludedPaths).map(p =>
+      path.isAbsolute(p) ? path.relative(this.workspaceRoot, p) : p
+    );
+    console.debug("updateView REL:", relExcludedPaths);
+    setExcludedPath(relExcludedPaths);
     vscode.commands.executeCommand('extension.showMatchesList');
   }
 
   // Mark a file/folder as excluded - if its a folder --> recursively exclude all its children
-  exclude(filePath: string) {
+  excludeFolder(filePath: string) {
     if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
       const allPaths = this.getAllNodes(filePath);
       allPaths.forEach(p => this.excludedPaths.add(p));
-    } else {
-      this.excludedPaths.add(filePath);
     }
     this.updateView();
   }
 
-
-  // Shows only matches in a defined subtree. Excludes all other paths.
-  onlyShowMatchesIn(filePath: string){
-    const allNodes = this.getAllNodes(this.workspaceRoot);
-    const subTree = new Set(this.getAllNodes(filePath));
-    this.excludedPaths = new Set(allNodes.filter(node => !subTree.has(node)));
+  excludeFile(filePath: string) {    
+    this.excludedPaths.add(filePath);    
     this.updateView();
   }
 
   // Remove a file/folder from the exclusion - if its a folder --> recursively unexclude all its children
-  unexclude(filePath: string) {
+  unexcludeFolder(filePath: string) {
     if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
       const allPaths = this.getAllNodes(filePath);
       allPaths.forEach(p => this.excludedPaths.delete(p));
-    } else {
-      this.excludedPaths.delete(filePath);
     }
     this.updateView();
   }
-  
+
+  unexcludeFile(filePath: string) {
+    this.excludedPaths.delete(filePath);    
+    this.updateView();
+  }
+
   // Restrict the view to only show the chain (folders) that lead to the target file
   // Get chain of paths from the workspace root to the target file
   // Exclude all nodes that are not in the chain
   // Done :D
   showMatchesForFile(filePath: string) {
-    vscode.window.showInformationMessage(`Processing matches for: ${filePath}`);
+    console.debug("showMatchesForFile:", filePath)
     const allNodes = this.getAllNodes(this.workspaceRoot);    
     const chainPaths = this.getChainPaths(filePath);    
     this.excludedPaths = new Set(allNodes.filter(node => !chainPaths.has(node)));
     this.updateView();
   }
 
+  // Shows only matches in a defined subtree. Excludes all other paths.
+  showMatchesForFolder(filePath: string){
+    console.debug("showMatchesForFolder:", filePath)
+    const allNodes = this.getAllNodes(this.workspaceRoot);
+    const subTree = new Set(this.getAllNodes(filePath));
+    this.excludedPaths = new Set(allNodes.filter(node => !subTree.has(node)));
+    this.updateView();
+  }
+
+  
+  
   // Recursively get all file and folder paths from the given directory
   // Call reddirSync with withFileTypes to get an array
   // Append to nodes if its a directory call function recursive
@@ -161,7 +175,7 @@ export class FileExplorerProvider implements vscode.TreeDataProvider<FileNode> {
   }
 
   // Build a set of paths representing the chain from the workspace root to the target
-  // strip the dirname for the resolved path --> do this until you are the root
+  // strip the dirname for the resolved path --> do this until you are at the root
   // --> return chain
   private getChainPaths(target: string): Set<string> {
     const chain = new Set<string>();
@@ -178,7 +192,7 @@ export class FileExplorerProvider implements vscode.TreeDataProvider<FileNode> {
   }
 
   resetExclusion(): void {
-    this.unexclude(this.workspaceRoot)
+    this.unexcludeFolder(this.workspaceRoot)
     this.updateView()
   }
 }
