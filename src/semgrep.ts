@@ -142,6 +142,7 @@ export function isRelative(inputPath: string): boolean{
     return false;
   }
 }
+
 export async function handlePathSelection(
   command: string,
   type: string,
@@ -186,14 +187,14 @@ export async function handlePathSelection(
 
 export async function startSemgrepScan(
   config: string,
-  output: string,
+  outputFile: string,
   include: string,
   exclude: string,
   panel: vscode.WebviewPanel
 ): Promise<void> {
   if (config === "") config = "auto";
   const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-
+  console.debug("workspaceFolder",workspaceFolder)
   let semgrepPath = await checkSemgrepPath();
   console.log("semgrepPath",semgrepPath)
   if (!semgrepPath) {
@@ -212,27 +213,88 @@ export async function startSemgrepScan(
     semgrepPath = "semgrep"
   }
 
-  let semgrepCommand = `${semgrepPath} scan --config ${config} --strict --json`;
+  if (!semgrepPath) {
+    vscode.window.showErrorMessage("The Semgrep path is required!");
+    return;
+  }
+  
+  let semgrepCommand = buildSemgrepCommand(semgrepPath, config)
 
-  const currentDate = new Date();
-  const formattedDate = currentDate.toISOString().split('T')[0].replace(/-/g, ''); // Convert to YYYYMMDD
 
-  // If no output filename is set - generate it with the format
-  // <Datum in YYYYMMDD> _ semgrep _ <ruleset>.json
-  if (output === "") {
-    // Replace '/' with '_' --> would break the path for "p/python"
-    const cleanedConfig = config.replace(/\//g, '_'); 
-    output = `${formattedDate}_semgrep_${cleanedConfig}.json`;
-  } else {
+  
+  function generateSemgrepOutputFilename(config: string, output?: string): string {
+    /*
+    Generate a Semgrep output filename based on config and output hint.
+    If output is a folder, generate filename in that folder.
+    */
+    const currentDate = new Date();
+    const formattedDate = currentDate.toISOString().split('T')[0].replace(/-/g, '');
+
+    function defaultNameFragment(config: string): string {
+      return config
+        .split(',')
+        .map(c => c.trim())
+        .filter(Boolean)
+        .map(c => {
+          if (c === "auto") return "auto";
+          if (c.startsWith("http://") || c.startsWith("https://")) {
+            const segment = c.split('//').pop();
+            if (!segment) {
+              vscode.window.showWarningMessage(`Invalid config URL: "${c}" - no rule or filename found after the last slash.`);
+              return c.replace(/\W+/g, "_");
+            }
+            return segment.replace(/\W+/g, "_");
+          }
+          return c.replace(/^.*[\\/]/, '').replace(/\W+/g, "_");
+        })
+        .slice(0, 3)
+        .join("__");
+    }
+
+    const defaultFilename = `${formattedDate}_semgrep_${defaultNameFragment(config)}.json`;
+
+    if (!output || output.trim() === "") {
+      return defaultFilename;
+    }
+
+    try {
+      // If path exists and is a directory (synchronously, safe for UI):
+      if (fs.existsSync(output) && fs.statSync(output).isDirectory()) {
+        // Place generated file in the given directory
+        return path.join(output, defaultFilename);
+      }
+    } catch (e) {
+      vscode.window.showErrorMessage(`Error while trying to join your folder with the defaultFilename: "${e}"`);
+    }
+
+    // If output has no ".json", append .json
     if (!output.endsWith('.json')) {
-      output += '.json';
+      return `${output}.json`;
+    } else {
+      return output;
     }
   }
 
-  // chain exlusion and inclusions
-  if (output !== "") {    
-    semgrepCommand += ` --json-output ${output}`;
+  outputFile = generateSemgrepOutputFilename(config, outputFile);
+  // yank the isRelative function and use it here to validate if the outputfile 
+  // already exist to add a warning with yes overwrite or no abort for the user
+  if (isRelative(outputFile)){
+    const choice = await vscode.window.showWarningMessage(
+    `The file "${outputFile}" already exists. Overwrite it?`,
+    { modal: true }, // this blocks the entire vscode 
+    'Yes',
+    'No'
+  );
+
+  if (choice === 'No') {
+    // user chose “No” or dismissed the dialog
+    return;
   }
+  }
+  
+  console.log(outputFile);
+  semgrepCommand += ` --json-output '${outputFile}'`; // Dont use " here :P
+
   // we need multiple --include/--exclude
   // see https://semgrep.dev/docs/cli-reference
   if (include !== "") {
@@ -302,6 +364,12 @@ export async function startSemgrepScan(
         cwd: workspaceFolder// use the workspaceFolder Path as cwd to always get the correct relative file structure
       });      
     }
+
+    // post a message to the Webview
+    panel.webview.postMessage({
+      command: 'scanStart',
+    });
+
     // Display stdout (progress bar + results) which includes PTY
     child.stdout.on('data', async (data) => {
       if (isFinished){return}
@@ -371,21 +439,23 @@ export async function startSemgrepScan(
         //reject(new Error(`Failed to parse Semgrep ${SemgrepOutput}`));
       } else if (regexEndOfScanMatch){
         console.debug("Scan Summary called")
+        console.debug(outputFile)
         isFinished = true
-        if (fs.existsSync(output)){
+        if (fs.existsSync(outputFile)){
           console.debug("File exists")
         } else {
           // if its a relative path try to combine the workspacePath and the output path
-          output = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath + "/" + output;          
-          if (fs.existsSync(output)){
+          outputFile = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath + "/" + outputFile;
+          if (fs.existsSync(outputFile)){
             console.debug("File exists after combination")
           } else {
             console.debug("File still deosnt exist")
-            vscode.window.showErrorMessage(`Failed to parse output path: ${output}`)
+            console.debug(outputFile)
+            vscode.window.showErrorMessage(`Failed to parse output path: ${outputFile}`)
           }
         }
 
-        fs.readFile(output, 'utf-8', (err, data) => {
+        fs.readFile(outputFile, 'utf-8', (err, data) => {
           if (err) {
             vscode.window.showErrorMessage(`Failed to read Semgrep output file: ${err.message}`);
             return;
@@ -484,3 +554,57 @@ async function checkSemgrepPath(): Promise<string | undefined> {
   });
 }
 
+  
+function buildSemgrepCommand(semgrepPath: string, config: string): string {
+  /*
+  Create the semgrep command 
+  1. check if file exits --> yes add as config
+  2. check if directory --> yes search recursive for all leafes/files
+  3. check if its http:// https:// p/ r/ --> yes add as config
+  4. if not its not "auto" display a warning
+  5. add it   
+  */
+  const configs: string[] = [];
+
+  for (let c of config.split(',')) {
+    c = c.trim();
+
+    // check for filesystem existence (files or directories)
+    if (fs.existsSync(c) && fs.statSync(c).isFile()) {
+      configs.push(`--config "${c}"`);
+    } else if (fs.existsSync(c) && fs.statSync(c).isDirectory()) {
+      for (const file of findAllFiles(c)) {
+        configs.push(`--config "${file}"`);
+      }
+    }
+    // check for URL, registry id, or fallback
+    else if (/^(\w+:\/\/)/.test(c) || /^([pr]\/)/.test(c)) {
+      configs.push(`--config ${c}`);
+    } else {
+      if (c !== "auto"){
+        // Add a "safeguard" - its a warning        
+          vscode.window.showWarningMessage(
+          `The config value "${c}" was not recognized as a local file, directory, or a valid Semgrep registry/URL. This may cause Semgrep to fail. Please check your config value.`
+        );
+      }        
+      configs.push(`--config '${c}'`);
+    }
+  }
+
+  const configArgs = configs.join(' ');
+  let semgrepCommand = `${semgrepPath} scan ${configArgs} --strict --json`;
+  return semgrepCommand;
+}
+
+function findAllFiles(dir: string): string[] {
+  let files: string[] = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      files = files.concat(findAllFiles(fullPath));
+    } else {
+      files.push(fullPath);
+    }
+  }
+  return files;
+}
