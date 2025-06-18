@@ -106,24 +106,30 @@ export class FileExplorerProvider implements vscode.TreeDataProvider<FileNode> {
   }
 
   // Mark a file/folder as excluded - if its a folder --> recursively exclude all its children
-  exclude(filePath: string) {
+  excludeFolder(filePath: string) {
     if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
       const allPaths = this.getAllNodes(filePath);
       allPaths.forEach(p => this.excludedPaths.add(p));
-    } else {
-      this.excludedPaths.add(filePath);
     }
     this.updateView();
   }
 
+  excludeFile(filePath: string) {    
+    this.excludedPaths.add(filePath);    
+    this.updateView();
+  }
+
   // Remove a file/folder from the exclusion - if its a folder --> recursively unexclude all its children
-  unexclude(filePath: string) {
+  unexcludeFolder(filePath: string) {
     if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
       const allPaths = this.getAllNodes(filePath);
       allPaths.forEach(p => this.excludedPaths.delete(p));
-    } else {
-      this.excludedPaths.delete(filePath);
     }
+    this.updateView();
+  }
+
+  unexcludeFile(filePath: string) {
+    this.excludedPaths.delete(filePath);    
     this.updateView();
   }
 
@@ -186,7 +192,7 @@ export class FileExplorerProvider implements vscode.TreeDataProvider<FileNode> {
   }
 
   resetExclusion(): void {
-    this.unexclude(this.workspaceRoot)
+    this.unexcludeFolder(this.workspaceRoot)
     this.updateView()
   }
 }

@@ -12,7 +12,7 @@ import {
 import generateStartWebview from './startWebview';
 import generateSemgrepWebview from './semgrepWebview';
 import { startImportSemgrepJson, isRelative, finalImportSemgrepJson, handlePathSelection, startSemgrepScan,} from './semgrep';
-import { FileExplorerProvider, FileNode } from './fileView';
+import { FileExplorerProvider } from './fileView';
 
 
 // Activate the extension.
@@ -40,14 +40,26 @@ export const activate = (context: vscode.ExtensionContext) => {
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("fileExplorer.exclude", (node: FileNode) =>
-      fileExplorerProvider.exclude(node.filePath)
+    vscode.commands.registerCommand("fileExplorer.excludeFile", (uri: vscode.Uri) =>
+      fileExplorerProvider.excludeFile(uri.fsPath)
     )
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("fileExplorer.unexclude", (node: FileNode) =>
-      fileExplorerProvider.unexclude(node.filePath)
+    vscode.commands.registerCommand("fileExplorer.excludeFolder", (uri: vscode.Uri) =>
+      fileExplorerProvider.excludeFolder(uri.fsPath)
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("fileExplorer.unexcludeFile", (uri: vscode.Uri) =>
+      fileExplorerProvider.unexcludeFile(uri.fsPath)
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("fileExplorer.unexcludeFolder", (uri: vscode.Uri) =>
+      fileExplorerProvider.unexcludeFolder(uri.fsPath)
     )
   );
 
