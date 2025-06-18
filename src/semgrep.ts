@@ -276,6 +276,22 @@ export async function startSemgrepScan(
   }
 
   outputFile = generateSemgrepOutputFilename(config, outputFile);
+  // yank the isRelative function and use it here to validate if the outputfile 
+  // already exist to add a warning with yes overwrite or no abort for the user
+  if (isRelative(outputFile)){
+    const choice = await vscode.window.showWarningMessage(
+    `The file "${outputFile}" already exists. Overwrite it?`,
+    { modal: true }, // this blocks the entire vscode 
+    'Yes',
+    'No'
+  );
+
+  if (choice === 'No') {
+    // user chose “No” or dismissed the dialog
+    return;
+  }
+  }
+  
   console.log(outputFile);
   semgrepCommand += ` --json-output '${outputFile}'`; // Dont use " here :P
 
@@ -348,6 +364,12 @@ export async function startSemgrepScan(
         cwd: workspaceFolder// use the workspaceFolder Path as cwd to always get the correct relative file structure
       });      
     }
+
+    // post a message to the Webview
+    panel.webview.postMessage({
+      command: 'scanStart',
+    });
+
     // Display stdout (progress bar + results) which includes PTY
     child.stdout.on('data', async (data) => {
       if (isFinished){return}

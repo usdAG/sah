@@ -83,11 +83,7 @@
     });
   })
 
-  startSemgrepScan.addEventListener('click', () => {
-    scanStatus.classList.add('show');
-    scanStatus.style.color = 'white';
-    scanStatus.innerHTML = '⏳ Scanning in progress...';
-
+  startSemgrepScan.addEventListener('click', () => {   
     vscode.postMessage({
       command: 'startSemgrepScan',      
       config: configPath.value,
@@ -117,6 +113,11 @@
       scanStatus.style.color = 'white';
       scanStatus.innerHTML = `⏳ Scanning in progress...${message.data}`;
     }
+    if (message.command === 'scanStart') {
+      scanStatus.classList.add('show');
+      scanStatus.style.color = 'white';
+      scanStatus.innerHTML = '⏳ Scanning in progress...';
+    }  
   
   });
   
