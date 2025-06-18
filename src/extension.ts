@@ -170,8 +170,8 @@ export const activate = (context: vscode.ExtensionContext) => {
           case 'configPathBtn':
             handlePathSelection(
               'configPathBtn',
-              'file',
-              'Select config file to use for the scan',
+              'dynamic',
+              'Select config file/folder to use for the scan',
               panel
             );
             break;

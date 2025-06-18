@@ -102,12 +102,8 @@
     if (message.command === 'configPathBtnResponse') {
       configPath.value = message.path
     }
-    if (message.command === 'outputPathBtnResponse') {
-      const currentDate = new Date();
-      const formattedDate = currentDate.toISOString().split('T')[0].replace(/-/g, ''); // Convert to YYYYMMDD
-      const cleanedConfig = configPath.value.replace(/\//g, '_'); 
-      let output = `${formattedDate}_semgrep_${cleanedConfig}.json`;
-      outputPath.value = message.path + "/" + output
+    if (message.command === 'outputPathBtnResponse') {     
+      outputPath.value = message.path
     }
     if (message.command === 'scanComplete') {
       scanStatus.style.color = 'green';

@@ -37,11 +37,12 @@
 
       <!-- Config Path -->
       <label for="configPath">
-        Config to include
+        Config(s) to include
         <span class="info-tooltip">
           <span class="info-icon" tabindex="0" aria-label="Help">&#x1F6C8;</span>
           <span class="tooltip" id="configPathTooltip">
-            Choose a Semgrep configuration to control which rules are run.
+            Choose one ore more Semgrep configurations to control which rules are run.
+            Comma seperate them! <br>
             You can use your own rules or select official rule packs from the Semgrep Registry.<br>
             See examples and browse available configs at
             <a href="https://semgrep.dev/r" target="_blank">semgrep.dev/r</a>.
@@ -50,7 +51,7 @@
         </span>
       </label>
       <div class="input-wrapper">
-        <button type="button" id="configPathWizard" class="folder-btn">Select File</button>
+        <button type="button" id="configPathWizard" class="folder-btn">Select File/Folder</button>
         <input type="text" id="configPath" value="auto">
       </div>
 
