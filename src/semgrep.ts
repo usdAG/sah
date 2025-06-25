@@ -5,6 +5,8 @@ import { Pattern } from './patterns';
 import { saveProject } from './projects';
 import { spawn } from 'child_process';
 import * as path from 'path';
+import { logger } from './logging';
+
 export let importedMatches : number = 0;  
 export let jsonData : any;
 export let absolute_path: string;
@@ -18,7 +20,7 @@ interface SemgrepError {
 
 // loads the JSON file and sends the path of the first scanned file of the scan
 export async function startImportSemgrepJson(panel: vscode.WebviewPanel, file_path: string){
-  console.debug(file_path)
+  logger.debug(file_path)
   try {
     try {
       // Datei einlesen
@@ -30,10 +32,10 @@ export async function startImportSemgrepJson(panel: vscode.WebviewPanel, file_pa
         vscode.window.showErrorMessage(`Invalid JSON file at : ${path}`);
         return;
     }   
-    console.debug(`Importing: ${jsonData.results.length} Matches` )
+    logger.debug(`Importing: ${jsonData.results.length} Matches` )
     if (jsonData.results && Array.isArray(jsonData.results)) {
       for (const result of jsonData.results) {
-        console.debug(`Relative path ${result.path}`)         
+        logger.debug(`Relative path ${result.path}`)         
         panel.webview.postMessage({
             command: 'relativePath',
             path: result.path
@@ -65,7 +67,7 @@ export async function finalImportSemgrepJson(){
         }
 
         const absolutePath = path.join(workspaceFolder, result.path);                
-        console.debug(`Resolved path: ${absolutePath}`);
+        logger.debug(`Resolved path: ${absolutePath}`);
         const startLine = result.start.line;
         const startCol = result.start.col;
         const endLine = result.end.line;
@@ -194,9 +196,9 @@ export async function startSemgrepScan(
 ): Promise<void> {
   if (config === "") config = "auto";
   const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-  console.debug("workspaceFolder",workspaceFolder)
+  logger.debug("workspaceFolder",workspaceFolder)
   let semgrepPath = await checkSemgrepPath();
-  console.log("semgrepPath",semgrepPath)
+  logger.debug("semgrepPath", semgrepPath)
   if (!semgrepPath) {
     let placeholder;
     if (process.platform === 'win32') {      
@@ -292,7 +294,7 @@ export async function startSemgrepScan(
   }
   }
   
-  console.log(outputFile);
+  logger.debug("Output path:", outputFile);
   semgrepCommand += ` --json-output '${outputFile}'`; // Dont use " here :P
 
   // we need multiple --include/--exclude
@@ -316,7 +318,7 @@ export async function startSemgrepScan(
   }
 
 
-  console.debug("Executing Semgrep command:", semgrepCommand);
+  logger.debug("Executing Semgrep command:", semgrepCommand);
 
   vscode.window.showInformationMessage('Starting Semgrep Scan!');
 
@@ -380,7 +382,7 @@ export async function startSemgrepScan(
       // eslint-disable-next-line no-control-regex
       const SemgrepOutput = data.toString().replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
       
-      //console.debug(SemgrepOutput)
+      //logger.debug(SemgrepOutput)
       // Regular expression ("0% -:--:--" and "0% 0:00:00")
       const regex = /(\d+%\s*).*?([-\d]{1,2}:[-\d]{2}:[-\d]{2})/;
       const match = SemgrepOutput.match(regex);
@@ -398,7 +400,7 @@ export async function startSemgrepScan(
         const progressPercent = match[1];
         const timeRemaining = match[2];
 
-        console.debug(`[PROGRESS]: ${progressPercent} Time elapsed: ${timeRemaining}`);
+        logger.debug(`[PROGRESS]: ${progressPercent} Time elapsed: ${timeRemaining}`);
 
         // Update the Webview each time
         panel.webview.postMessage({
@@ -416,7 +418,7 @@ export async function startSemgrepScan(
 
           // check if there is an error field in the json output
           if (_jsonData.errors && Array.isArray(_jsonData.errors) && _jsonData.errors.length > 0) {
-            console.debug(_jsonData.errors)
+            logger.debug(_jsonData.errors)
             let outputMessage: string = ""
             _jsonData.errors.forEach((error: SemgrepError) => {
               const message = `\nSemgrep ${error.level}: ${error.message}\n`;
@@ -431,26 +433,26 @@ export async function startSemgrepScan(
             reject(new Error('Semgrep didn\'t found any Matches!'))
             return
           }
-          console.debug("No errors found :D");
+          logger.debug("No errors found :D");
         } catch (parseError) {
           // known error if the output to stdout of the scan is to long it breaks
-          console.debug(`Failed to parse Semgrep output ${parseError}`);
+          logger.debug(`Failed to parse Semgrep output ${parseError}`);
         }
         //reject(new Error(`Failed to parse Semgrep ${SemgrepOutput}`));
       } else if (regexEndOfScanMatch){
-        console.debug("Scan Summary called")
-        console.debug(outputFile)
+        logger.debug("Scan Summary called")
+        logger.debug(outputFile)
         isFinished = true
         if (fs.existsSync(outputFile)){
-          console.debug("File exists")
+          logger.debug("File exists")
         } else {
           // if its a relative path try to combine the workspacePath and the output path
           outputFile = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath + "/" + outputFile;
           if (fs.existsSync(outputFile)){
-            console.debug("File exists after combination")
+            logger.debug("File exists after combination")
           } else {
-            console.debug("File still deosnt exist")
-            console.debug(outputFile)
+            logger.debug("File still deosnt exist")
+            logger.debug(outputFile)
             vscode.window.showErrorMessage(`Failed to parse output path: ${outputFile}`)
           }
         }
@@ -462,7 +464,7 @@ export async function startSemgrepScan(
           }
           try {
             jsonData = JSON.parse(data);            
-            //console.debug('Semgrep JSON Output:', jsonData);   
+            //logger.debug('Semgrep JSON Output:', jsonData);   
             if (!hasFailed){
               finalImportSemgrepJson(); 
             }
@@ -487,7 +489,7 @@ export async function startSemgrepScan(
           if (SemgrepOutput.match(/^Nothing to scan\.$/)){
             vscode.window.showErrorMessage(`Semgrep didn't found anything to Scan!`);
           }
-          console.debug("adding", SemgrepOutput);
+          logger.debug("adding", SemgrepOutput);
           stdoutData += SemgrepOutput;
         }      
       }
@@ -495,7 +497,7 @@ export async function startSemgrepScan(
 
     child.stderr.on('data', (data) => {
       if (isFinished){return}
-      console.error('[STDERR]:', data.toString());
+      logger.error('Child process [STDERR]:', data.toString());
       vscode.window.showErrorMessage(`Semgrep Error: ${data.toString()}`);
       reject(new Error(`Semgrep Error: ${data.toString()}`)); // Reject if there is an error
     });
@@ -504,14 +506,14 @@ export async function startSemgrepScan(
     // capture should resolve before the exit call is captured
     child.on('exit', (code) => {
       if (isFinished){return}
-      console.debug(`[EXIT]: Process exited with code ${code}`);
-      console.debug(stdoutData)
+      logger.debug(`[EXIT]: Process exited with code ${code}`);
+      logger.debug(stdoutData)
       reject(new Error(`Semgrep Scan Failed with exit code ${code} Stdout:${stdoutData}`)); // Reject on failure
     });
 
     child.on('error', (error) => {
       if (isFinished){return}
-      console.error(`[ERROR]:`, error);
+      logger.error(`Child process [ERROR]:`, error);
       vscode.window.showErrorMessage(`Semgrep Error: ${error.message}`);
       reject(new Error(`Semgrep Error: ${error.message}`)); // Reject if there is an error
     });
@@ -531,11 +533,11 @@ async function checkSemgrepPath(): Promise<string | undefined> {
     }
 
     let output = '';  
-    //const env = {...process.env};
-    //console.log(env)
+    const env = {...process.env};
+    logger.debug("Env for semgrep childprocess:",env)
     child.stdout.on('data', (data) => {
       output += data.toString();
-      console.log(output)
+      logger.debug("Accumulted output data from semgrep childprocess", output)
     });
 
     child.stderr.on('data', () => {
@@ -543,7 +545,7 @@ async function checkSemgrepPath(): Promise<string | undefined> {
       resolve(undefined)
       //console.log("ERROR",data)
     });
-    child.on('error', (err) => { console.log('spawn error', err); });
+    child.on('error', (err) => { logger.error('Semgrep childprocess spawn error(?!)', err); });
     child.on('exit', (code) => {
       if (code === 0 && output.trim().length > 0) {
         resolve(output.trim());

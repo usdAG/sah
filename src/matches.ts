@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { Pattern } from './patterns';
+import { logger } from './logging';
 
 export interface Match {
   pattern: Pattern;
@@ -78,7 +79,7 @@ export const updateAllMatches = (allMatchesNew: Array<Match>) => {
 };
 
 export const addSemgrepMatch = (startLine: number, proof: string, path: string, pattern: Pattern) => {
-  console.debug("addSemgrepMatch")
+  logger.debug("addSemgrepMatch")
   matchIdCounter += 1;
   const newMatch: Match = {
     pattern: pattern,
@@ -116,7 +117,7 @@ export function deduplicateMatches(matches: Array<Match>): Array<Match> {
   const seen = new Map();
   const filteredMatches = matches.filter((match) => {
     const key = `${match.path}:${match.lineNumber}:${match.lineContent}`;
-    console.debug(`Processing: ${key} - ${match.detectionType}`);
+    logger.debug(`Processing: ${key} - ${match.detectionType}`);
 
     if (seen.has(key)) {
       // todo remove this += detectionType (there is only semgrep)

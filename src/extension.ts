@@ -13,12 +13,12 @@ import generateStartWebview from './startWebview';
 import generateSemgrepWebview from './semgrepWebview';
 import { startImportSemgrepJson, isRelative, finalImportSemgrepJson, handlePathSelection, startSemgrepScan,} from './semgrep';
 import { FileExplorerProvider } from './fileView';
-
+import { logger } from './logging';
 
 // Activate the extension.
 export const activate = (context: vscode.ExtensionContext) => {
   const localPath = context.extensionPath;
-
+  logger.info('SAH extension activated!');
   let panel: vscode.WebviewPanel;
   let active = false;
   const fileExplorerProvider = new FileExplorerProvider(vscode.workspace.rootPath || "");
@@ -99,6 +99,14 @@ export const activate = (context: vscode.ExtensionContext) => {
     }),
   ) 
 
+  context.subscriptions.push(
+    vscode.commands.registerCommand('SAH.setLogLevelDebug',   () => logger.setLogLevel('debug')),
+    vscode.commands.registerCommand('SAH.setLogLevelInfo',    () => logger.setLogLevel('info')),
+    vscode.commands.registerCommand('SAH.setLogLevelWarn',    () => logger.setLogLevel('warn')),
+    vscode.commands.registerCommand('SAH.setLogLevelError',   () => logger.setLogLevel('error')),
+    vscode.commands.registerCommand('SAH.setLogLevelOff',     () => logger.setLogLevel('off'))
+  );
+
 
   /* End Register Tree View */
   const activePanel = () => {
@@ -151,12 +159,12 @@ export const activate = (context: vscode.ExtensionContext) => {
             vscode.commands.executeCommand('extension.showMatchesList');
             break;
           case 'startSemgrepImport':
-            console.debug("startSemgrepImport called")
+            logger.debug("startSemgrepImport called")
             startImportSemgrepJson(panel, message.path);
             break;
           case 'validatePath':{
             const isValid = isRelative(message.path);
-            console.debug(`validatePath called ${message.path} ${isValid}`)          
+            logger.debug(`validatePath called ${message.path} ${isValid}`)          
             panel.webview.postMessage({
                 command: 'validatePathResponse',
                 isValid: isValid
@@ -195,7 +203,7 @@ export const activate = (context: vscode.ExtensionContext) => {
             const output: string  = message.output
             const config: string  = message.config
             displayNoProjectWarning();
-            console.debug(message)            
+            logger.debug(message)            
             try {
               await startSemgrepScan( config, output, include, exclude, panel);
               panel.webview.postMessage({
@@ -203,10 +211,10 @@ export const activate = (context: vscode.ExtensionContext) => {
               });
               
             } catch (error ) {
-              console.debug("extension error")
+              logger.debug("extension error")
               // typescript types :D
               if (error instanceof Error) {     
-                console.debug("scanFailed sending")           
+                logger.debug("scanFailed sending")           
                 panel.webview.postMessage({
                     command: 'scanFailed',
                     errorMessage: error.message,
@@ -287,8 +295,8 @@ export const activate = (context: vscode.ExtensionContext) => {
     const htmlContent = generateMatchesWebview(allMatches, activePanel().webview, localPath);
 
     // Log the size of the HTML content
-    console.log(`Generated HTML size: ${htmlContent.length} characters`);
-    console.log(`Approximate memory usage: ${(Buffer.byteLength(htmlContent, 'utf8') / 1024 / 1024).toFixed(2)} MB`);
+    logger.info(`Generated HTML size: ${htmlContent.length} characters`);
+    logger.info(`Approximate memory usage: ${(Buffer.byteLength(htmlContent, 'utf8') / 1024 / 1024).toFixed(2)} MB`);
 
     activePanel().webview.html = htmlContent;
 

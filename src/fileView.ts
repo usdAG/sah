@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
 import { setExcludedPath } from "./matchesWebview";
-
+import { logger } from './logging';
 /*
 https://code.visualstudio.com/api/extension-guides/tree-view
 */
@@ -100,7 +100,7 @@ export class FileExplorerProvider implements vscode.TreeDataProvider<FileNode> {
     const relExcludedPaths = Array.from(this.excludedPaths).map(p =>
       path.isAbsolute(p) ? path.relative(this.workspaceRoot, p) : p
     );
-    console.debug("updateView REL:", relExcludedPaths);
+    logger.debug("updateView REL:", relExcludedPaths);
     setExcludedPath(relExcludedPaths);
     vscode.commands.executeCommand('extension.showMatchesList');
   }
@@ -138,7 +138,7 @@ export class FileExplorerProvider implements vscode.TreeDataProvider<FileNode> {
   // Exclude all nodes that are not in the chain
   // Done :D
   showMatchesForFile(filePath: string) {
-    console.debug("showMatchesForFile:", filePath)
+    logger.debug("showMatchesForFile:", filePath)
     const allNodes = this.getAllNodes(this.workspaceRoot);    
     const chainPaths = this.getChainPaths(filePath);    
     this.excludedPaths = new Set(allNodes.filter(node => !chainPaths.has(node)));
@@ -147,7 +147,7 @@ export class FileExplorerProvider implements vscode.TreeDataProvider<FileNode> {
 
   // Shows only matches in a defined subtree. Excludes all other paths.
   showMatchesForFolder(filePath: string){
-    console.debug("showMatchesForFolder:", filePath)
+    logger.debug("showMatchesForFolder:", filePath)
     const allNodes = this.getAllNodes(this.workspaceRoot);
     const subTree = new Set(this.getAllNodes(filePath));
     this.excludedPaths = new Set(allNodes.filter(node => !subTree.has(node)));
