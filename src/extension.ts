@@ -287,8 +287,8 @@ export const activate = (context: vscode.ExtensionContext) => {
     const htmlContent = generateMatchesWebview(allMatches, activePanel().webview, localPath);
 
     // Log the size of the HTML content
-    console.log(`Generated HTML size: ${htmlContent.length} characters`);
-    console.log(`Approximate memory usage: ${(Buffer.byteLength(htmlContent, 'utf8') / 1024 / 1024).toFixed(2)} MB`);
+    logger.info(`Generated HTML size: ${htmlContent.length} characters`);
+    logger.info(`Approximate memory usage: ${(Buffer.byteLength(htmlContent, 'utf8') / 1024 / 1024).toFixed(2)} MB`);
 
     activePanel().webview.html = htmlContent;
 

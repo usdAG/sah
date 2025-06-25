@@ -42,7 +42,7 @@ export const newProject = (callback: Function) => {
       })
       .catch((error: any) => {
         vscode.window.showErrorMessage('Project could not be created!');
-        console.error(error);
+        logger.error("While saving an error accured", error);
       });
   });
 };

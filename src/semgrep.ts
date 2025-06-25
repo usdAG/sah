@@ -198,7 +198,7 @@ export async function startSemgrepScan(
   const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
   logger.debug("workspaceFolder",workspaceFolder)
   let semgrepPath = await checkSemgrepPath();
-  console.log("semgrepPath",semgrepPath)
+  logger.debug("semgrepPath", semgrepPath)
   if (!semgrepPath) {
     let placeholder;
     if (process.platform === 'win32') {      
@@ -294,7 +294,7 @@ export async function startSemgrepScan(
   }
   }
   
-  console.log(outputFile);
+  logger.debug("Output path:", outputFile);
   semgrepCommand += ` --json-output '${outputFile}'`; // Dont use " here :P
 
   // we need multiple --include/--exclude
@@ -497,7 +497,7 @@ export async function startSemgrepScan(
 
     child.stderr.on('data', (data) => {
       if (isFinished){return}
-      console.error('[STDERR]:', data.toString());
+      logger.error('Child process [STDERR]:', data.toString());
       vscode.window.showErrorMessage(`Semgrep Error: ${data.toString()}`);
       reject(new Error(`Semgrep Error: ${data.toString()}`)); // Reject if there is an error
     });
@@ -513,7 +513,7 @@ export async function startSemgrepScan(
 
     child.on('error', (error) => {
       if (isFinished){return}
-      console.error(`[ERROR]:`, error);
+      logger.error(`Child process [ERROR]:`, error);
       vscode.window.showErrorMessage(`Semgrep Error: ${error.message}`);
       reject(new Error(`Semgrep Error: ${error.message}`)); // Reject if there is an error
     });
@@ -533,11 +533,11 @@ async function checkSemgrepPath(): Promise<string | undefined> {
     }
 
     let output = '';  
-    //const env = {...process.env};
-    //console.log(env)
+    const env = {...process.env};
+    logger.debug("Env for semgrep childprocess:",env)
     child.stdout.on('data', (data) => {
       output += data.toString();
-      console.log(output)
+      logger.debug("Accumulted output data from semgrep childprocess", output)
     });
 
     child.stderr.on('data', () => {
@@ -545,7 +545,7 @@ async function checkSemgrepPath(): Promise<string | undefined> {
       resolve(undefined)
       //console.log("ERROR",data)
     });
-    child.on('error', (err) => { console.log('spawn error', err); });
+    child.on('error', (err) => { logger.error('Semgrep childprocess spawn error(?!)', err); });
     child.on('exit', (code) => {
       if (code === 0 && output.trim().length > 0) {
         resolve(output.trim());
