@@ -4,8 +4,14 @@ class Logger {
   // https://code.visualstudio.com/api/references/vscode-api#OutputChannel
   private channel = vscode.window.createOutputChannel('SAH');
   private logLevel: 'debug' | 'info' | 'warn' | 'error' | 'off';
+
   constructor() {
     this.logLevel = vscode.workspace.getConfiguration('SAH').get('logLevel', 'info');
+  }
+
+  public setLogLevel(level: 'debug' | 'info' | 'warn' | 'error' | 'off') {
+    this.logLevel = level;
+    vscode.window.showInformationMessage(`SAH log level set to ${level}.`);
   }
 
   debug(msg: string, ...args: any[]) {
@@ -26,6 +32,7 @@ class Logger {
     this.channel.appendLine(formatted);
   }
 }
+
 
 export const logger = new Logger();
 logger.info('Logger activated');

@@ -99,6 +99,14 @@ export const activate = (context: vscode.ExtensionContext) => {
     }),
   ) 
 
+  context.subscriptions.push(
+    vscode.commands.registerCommand('SAH.setLogLevelDebug',   () => logger.setLogLevel('debug')),
+    vscode.commands.registerCommand('SAH.setLogLevelInfo',    () => logger.setLogLevel('info')),
+    vscode.commands.registerCommand('SAH.setLogLevelWarn',    () => logger.setLogLevel('warn')),
+    vscode.commands.registerCommand('SAH.setLogLevelError',   () => logger.setLogLevel('error')),
+    vscode.commands.registerCommand('SAH.setLogLevelOff',     () => logger.setLogLevel('off'))
+  );
+
 
   /* End Register Tree View */
   const activePanel = () => {
