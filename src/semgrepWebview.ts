@@ -1,9 +1,11 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
+import { logger } from './logging';
+
 const generateSemgrepWebview = (webview: vscode.Webview, localPath: string,
 ) => {
-  console.debug("Start loading semgrepWebview")
+  logger.debug("Start loading semgrepWebview")
 
   // get path to stylesheet
   const stylesheetPath = vscode.Uri.file(

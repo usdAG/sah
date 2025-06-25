@@ -13,12 +13,12 @@ import generateStartWebview from './startWebview';
 import generateSemgrepWebview from './semgrepWebview';
 import { startImportSemgrepJson, isRelative, finalImportSemgrepJson, handlePathSelection, startSemgrepScan,} from './semgrep';
 import { FileExplorerProvider } from './fileView';
-
+import { logger } from './logging';
 
 // Activate the extension.
 export const activate = (context: vscode.ExtensionContext) => {
   const localPath = context.extensionPath;
-
+  logger.info('SAH extension activated!');
   let panel: vscode.WebviewPanel;
   let active = false;
   const fileExplorerProvider = new FileExplorerProvider(vscode.workspace.rootPath || "");
@@ -151,12 +151,12 @@ export const activate = (context: vscode.ExtensionContext) => {
             vscode.commands.executeCommand('extension.showMatchesList');
             break;
           case 'startSemgrepImport':
-            console.debug("startSemgrepImport called")
+            logger.debug("startSemgrepImport called")
             startImportSemgrepJson(panel, message.path);
             break;
           case 'validatePath':{
             const isValid = isRelative(message.path);
-            console.debug(`validatePath called ${message.path} ${isValid}`)          
+            logger.debug(`validatePath called ${message.path} ${isValid}`)          
             panel.webview.postMessage({
                 command: 'validatePathResponse',
                 isValid: isValid
@@ -195,7 +195,7 @@ export const activate = (context: vscode.ExtensionContext) => {
             const output: string  = message.output
             const config: string  = message.config
             displayNoProjectWarning();
-            console.debug(message)            
+            logger.debug(message)            
             try {
               await startSemgrepScan( config, output, include, exclude, panel);
               panel.webview.postMessage({
@@ -203,10 +203,10 @@ export const activate = (context: vscode.ExtensionContext) => {
               });
               
             } catch (error ) {
-              console.debug("extension error")
+              logger.debug("extension error")
               // typescript types :D
               if (error instanceof Error) {     
-                console.debug("scanFailed sending")           
+                logger.debug("scanFailed sending")           
                 panel.webview.postMessage({
                     command: 'scanFailed',
                     errorMessage: error.message,

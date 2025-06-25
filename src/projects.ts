@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import { allMatches, Match, updateAllMatches } from './matches';
+import { logger } from './logging';
 
 let currentProject: string;
 
@@ -47,7 +48,7 @@ export const newProject = (callback: Function) => {
 };
 
 export const loadProject = (callback: Function) => {
-  console.debug("loadProject")
+  logger.debug("loadProject")
   vscode.window.showOpenDialog({ openLabel: 'Load', filters: { JSON: ['json'] } }).then((uri) => {
     if (uri !== undefined && uri.length === 1) {
       fs.readFile(uri[0].fsPath, (err, data) => {

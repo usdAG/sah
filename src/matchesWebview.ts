@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { Match } from './matches';
+import { logger } from './logging';
 
 const sanitizeContent = (string: string) => {
   return string
@@ -62,7 +63,7 @@ export const setExcludedPath = (newExcludedPaths: string[]) => {
 
 
 function generateRuleSelection(rules: Array<Match>) {
-  console.debug("start generateRuleSelection")
+  logger.debug("start generateRuleSelection")
   const _rules = Array.from(new Set(rules.map((m) => m.pattern.pattern))).sort();
 
   return `
@@ -77,20 +78,20 @@ const generateMatchesWebview = (
   let matchesString: string = '';
   // create a copy of matches for later use - CategorySelection with all matches
   let _matches = [...matches];
-  console.debug(`filter: ${selectedStatus}|${selectedCriticality}|${selectedRule}|`)
+  logger.debug(`filter: ${selectedStatus}|${selectedCriticality}|${selectedRule}|`)
 
   // Filter for Status
   if (selectedStatus !== "all") {
-    console.debug('Status filter with: ', selectedStatus)
+    logger.debug('Status filter with: ', selectedStatus)
     _matches = _matches.filter((m) => m.status == selectedStatus);    
   }
-  console.debug(_matches)
+  logger.debug("Matches for webview generation (after status)",_matches)
 
   // Filter for Criticality 
   // if selectedCriticality > 5 (6 7) sort them asc or desc
   if (selectedCriticality > 5){
-    // don't add "console.debug" into a sorting algo :D
-    console.debug('Criticality filter with', selectedCriticality)
+    // don't add "logger.debug" into a sorting algo :D
+    logger.debug('Criticality filter with', selectedCriticality)
     _matches.sort((a, b) => {      
       if (selectedCriticality == 6) {
         return a.pattern.criticality - b.pattern.criticality; // Ascending
@@ -98,29 +99,29 @@ const generateMatchesWebview = (
         return b.pattern.criticality - a.pattern.criticality; // Descending
       }
     });
-    console.debug("end sorting")
+    logger.debug("end sorting")
   } else {
     // else filter _matches dependent on selected criticality
     _matches = selectedCriticality == 0 ? _matches : _matches.filter((m) => m.pattern.criticality == selectedCriticality);
-    console.debug('Criticality filter with', selectedCriticality);      
+    logger.debug('Criticality filter with', selectedCriticality);      
   }
-  console.debug(_matches)
+  logger.debug("Matches for webview generation (after criticality)",_matches)
 
   const ruleSelectionHTML = generateRuleSelection(_matches)
   // Filter for Rule
   if (selectedRule !== "all") {
-    console.debug('Rule filter with', selectedRule); 
+    logger.debug('Rule filter with', selectedRule); 
     _matches = _matches.filter((m) => m.pattern.pattern == selectedRule);    
   }
   // Filter for Excluded from FileView
   if (excludedPath.length > 0) {
-    console.debug("Filter for Excluded from FileView")
+    logger.debug("Filter for Excluded from FileView")
     _matches = _matches.filter((m) => !excludedPath.includes(m.path));
   } else {
-    console.debug("Not Filtering for Excluded from FileView (excludedPath <= 0)")
+    logger.debug("Not Filtering for Excluded from FileView (excludedPath <= 0)")
   }
 
-  console.debug("Generationg HTML with matches")
+  logger.debug("Generationg HTML with matches")
   const totalMatches = _matches.length;
   const totalPages = Math.ceil(totalMatches / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
@@ -128,7 +129,7 @@ const generateMatchesWebview = (
   
   // Get only the matches for the current page
   const paginatedMatches = _matches.slice(startIndex, endIndex);
-  console.debug(`Rendering page ${currentPage}/${totalPages} with ${ _matches.length} matches`);
+  logger.debug(`Rendering page ${currentPage}/${totalPages} with ${ _matches.length} matches`);
   // loop over all _matches and append HTML for each one to matchesString
   paginatedMatches.forEach((m) => {
 
@@ -202,7 +203,7 @@ const generateMatchesWebview = (
     </table>    
     <br><br></div>`;
   });
-  console.debug("Fininshed creating HTML with Matches")
+  logger.debug("Fininshed creating HTML with Matches")
   // get path to stylesheet
   const stylesheetPath = vscode.Uri.file(
     path.join(localPath, 'src', 'media', 'matches.css'),

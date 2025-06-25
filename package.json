@@ -13,6 +13,16 @@
 	"activationEvents": [],
 	"main": "./dist/extension",
 	"contributes": {
+    "configuration": {
+      "properties": {
+        "SAH.logLevel": {
+        "type": "string",
+        "default": "info",
+        "enum": ["debug", "info", "warn", "error", "off"],
+        "description": "Log level for SAH's output channel."
+      }
+      }
+    },
 		"commands": [			
 			{
 				"command": "extension.newProject",
