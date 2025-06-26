@@ -247,6 +247,15 @@ button:hover {
   box-shadow: 0 0 5px var(--vscode-focusBorder);
 }
 
+/* Set a border color to indecate if not default value*/
+#status-selection.highlighted,
+#criticality-selection.highlighted,
+#rules-selection.highlighted,
+#file-view.highlighted {
+  border-color: var(--vscode-editorWarning-foreground);
+  box-shadow: 0 0 5px var(--vscode-editorWarning-foreground);
+}
+
 /* Info icon in metadata */
 .info-icon {
   cursor: help;
