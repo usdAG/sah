@@ -4,4 +4,8 @@
 tsconfig.json
 tslint.json
 src/**/*.ts
+src/test/
 node_modules/
+package-json.lock
+webpack.config.js
+!README.md

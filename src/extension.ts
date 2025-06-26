@@ -323,6 +323,13 @@ export const activate = (context: vscode.ExtensionContext) => {
     context.subscriptions.push(deduplicateMatchesCommand)
     vscode.commands.executeCommand('extension.showMatchesList');
   })
+
+  // https://stackoverflow.com/questions/70074231/in-a-vs-code-extension-open-the-markdown-preview-of-the-readme-md-of-the-extens
+  const showHelp = vscode.commands.registerCommand("extension.showHelp", () => {
+    const readmePath = context.asAbsolutePath("README.md");
+    context.subscriptions.push(showHelp);
+    vscode.commands.executeCommand("markdown.showPreview", vscode.Uri.file(readmePath));
+  })
 };
 
 export const deactivate = () => { };
