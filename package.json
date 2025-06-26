@@ -111,6 +111,10 @@
       {
         "command": "SAH.setLogLevelOff",
         "title": "SAH: Set Log Level to Off"
+      },
+      {
+        "command" : "extension.showHelp",
+        "title": "SAH: Show Help"
       }
 		],
 		"keybindings": [
