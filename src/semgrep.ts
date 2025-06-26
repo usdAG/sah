@@ -56,6 +56,7 @@ export async function startImportSemgrepJson(panel: vscode.WebviewPanel, file_pa
 
 // function to import the Semgrep after the Path has been validated
 export async function finalImportSemgrepJson(){
+  logger.debug("Starting to import semgrepJson")
   try{
     if (jsonData.results && Array.isArray(jsonData.results)) {
       for (const result of jsonData.results) {
@@ -463,6 +464,7 @@ export async function startSemgrepScan(
             return;
           }
           try {
+            logger.debug("Starting to JSON parse semgrep data")
             jsonData = JSON.parse(data);            
             //logger.debug('Semgrep JSON Output:', jsonData);   
             if (!hasFailed){
