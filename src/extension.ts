@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import generateMatchesWebview, { setRule, setStatus } from './matchesWebview';
+import generateMatchesWebview, { excludedPath, setRule, setStatus } from './matchesWebview';
 import { setCriticality } from './matchesWebview';
 import {
   addComment,
@@ -238,6 +238,7 @@ export const activate = (context: vscode.ExtensionContext) => {
             await addComment(message.data, message.data_id)
             break
           case 'showMessage':
+            logger.debug(message.message)
             vscode.window.showInformationMessage(message.message);
             break
           
@@ -251,6 +252,14 @@ export const activate = (context: vscode.ExtensionContext) => {
             const newPage = message.page;
             panel.webview.html = generateMatchesWebview(allMatches, panel.webview, localPath, newPage);
             break
+          }
+          case 'isFileExclusionSet': {     
+            const value = excludedPath.length > 0      
+            logger.debug("isFileExclusionSet", value)    
+            panel.webview.postMessage({
+              command: 'isFileExclusionSetResponse',              
+              status: value         
+            });
           }
           default:
             break;

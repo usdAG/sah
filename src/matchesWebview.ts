@@ -13,7 +13,7 @@ const sanitizeContent = (string: string) => {
 let selectedStatus = "unprocessed"
 let selectedCriticality = 0;
 let selectedRule = "all";
-let excludedPath: string[] = [];
+export let excludedPath: string[] = [];
 
 
 export const setStatus = (newStatus: string, panel: vscode.WebviewPanel) => {
@@ -85,7 +85,7 @@ const generateMatchesWebview = (
     logger.debug('Status filter with: ', selectedStatus)
     _matches = _matches.filter((m) => m.status == selectedStatus);    
   }
-  logger.debug("Matches for webview generation (after status)",_matches)
+  //logger.debug("Matches for webview generation (after status)",_matches)
 
   // Filter for Criticality 
   // if selectedCriticality > 5 (6 7) sort them asc or desc
@@ -105,7 +105,7 @@ const generateMatchesWebview = (
     _matches = selectedCriticality == 0 ? _matches : _matches.filter((m) => m.pattern.criticality == selectedCriticality);
     logger.debug('Criticality filter with', selectedCriticality);      
   }
-  logger.debug("Matches for webview generation (after criticality)",_matches)
+  //logger.debug("Matches for webview generation (after criticality)",_matches)
 
   const ruleSelectionHTML = generateRuleSelection(_matches)
   // Filter for Rule
