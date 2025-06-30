@@ -69,7 +69,8 @@
   const outputPathBtn = document.getElementById('outputPathWizard');
   const excludePattern = document.getElementById('excludePattern');
   const includePattern = document.getElementById('includePattern');
-  const scanStatus = document.getElementById('scanStatus')
+  const scanStatus = document.getElementById('scanStatus');
+  const goToMatches = document.getElementById('goToMatches');
 
   configPathBtn.addEventListener('click', ()=>{
     vscode.postMessage({
@@ -91,6 +92,12 @@
       exclude: excludePattern.value,
       output: outputPath.value,
     });
+  });
+
+  goToMatches.addEventListener('click', () => {
+    vscode.postMessage({
+      command: 'goToMatches'
+    })
   });
 
   window.addEventListener('message', (event) => {

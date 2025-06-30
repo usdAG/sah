@@ -600,6 +600,10 @@ function buildSemgrepCommand(semgrepPath: string, config: string): string {
   return semgrepCommand;
 }
 
+export function goToMatches(){
+  vscode.commands.executeCommand('extension.showMatchesList');
+}
+
 function findAllFiles(dir: string): string[] {
   let files: string[] = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {

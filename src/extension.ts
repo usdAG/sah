@@ -11,7 +11,7 @@ import {
 } from './projects';
 import generateStartWebview from './startWebview';
 import generateSemgrepWebview from './semgrepWebview';
-import { startImportSemgrepJson, isRelative, finalImportSemgrepJson, handlePathSelection, startSemgrepScan,} from './semgrep';
+import { startImportSemgrepJson, isRelative, finalImportSemgrepJson, handlePathSelection, startSemgrepScan, goToMatches,} from './semgrep';
 import { FileExplorerProvider } from './fileView';
 import { logger } from './logging';
 
@@ -233,7 +233,9 @@ export const activate = (context: vscode.ExtensionContext) => {
             displayNoProjectWarning();
             finalImportSemgrepJson()
             break;  
-
+          case 'goToMatches':
+            goToMatches();
+            break;
           case 'addComment':
             await addComment(message.data, message.data_id)
             break
