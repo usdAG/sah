@@ -99,13 +99,72 @@ button:hover {
 
 /* Container for each match (card style) */
 .match-container {
+  display: flex;    
+  align-items: stretch; /* this is for the checkbox to be the same hight as the reset*/
   margin-bottom: 1.5em;
-  padding: 1em;
   background-color: var(--vscode-editorWidget-background);
   border: 1px solid var(--vscode-editorWidget-border);
   border-radius: 6px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   color: var(--vscode-editor-foreground);
+  overflow: hidden;
+  padding-top: 0.5em;
+}
+
+/* hide the real checkbox*/
+.match-toggle {
+  position: absolute;
+  top: 0; left: 0;
+  width: 32px; height: 100%;
+  margin: 0;
+  opacity: 0;
+  z-index: 2;  /* sits above content to catch clicks */
+}
+
+.match-input {
+  cursor: pointer;
+}
+
+.match-container::before {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: 32px;                   /* gutter width --> also need to add this for the match-toggle in general*/
+  background: var(--vscode-editorWidget-background);
+  border-right: 1px solid var(--vscode-editorWidget-border);
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+  z-index: 1;
+}
+
+.match-container::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px; height: 16px;
+  border: 1px solid var(--vscode-editor-foreground);
+  border-radius: 3px;
+  background: var(--vscode-editorWidget-background);
+  box-sizing: border-box;
+  z-index: 1;
+}
+
+.match-container:has(.match-toggle:checked)::after {
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  content: "✓";
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.match-content {
+  flex: 1;                         
+  padding: 1em;                    
+  margin-left: 32px;    /*  offsets everything to the left 32px to not be behind the checkbox */
 }
 
 /* Table inside match container */
@@ -291,4 +350,39 @@ button:hover {
 .desc-cell .desc-toggle-btn:hover {
   border-color: var(--vscode-focusBorder);
   box-shadow: 0 0 5px var(--vscode-focusBorder);
+}
+
+/* multiselect action bar*/
+#action-bar {
+  position: fixed;
+  bottom: 30px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  background: var(--vscode-editorWidget-background);
+  border: 1px solid var(--vscode-editorWidget-border);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  padding: 0.5em;
+  gap: 0.5em;
+  z-index: 1000;
+
+  /* move cursor when hovering on the bar */
+  cursor: move;
+}
+
+#action-bar.hidden {
+  display: none;
+}
+
+#action-bar button {
+  padding: 0.5em 1em;
+  cursor: pointer;
+  border: 1px solid var(--vscode-editorWidget-border);
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  border-radius: 4px;
+}
+#action-bar button:hover {
+  background: var(--vscode-button-hoverBackground);
 }

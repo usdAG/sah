@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { Match } from './matches';
+import { Match, toggledMatchIds } from './matches';
 import { logger } from './logging';
 
 const sanitizeContent = (string: string) => {
@@ -145,63 +145,88 @@ const generateMatchesWebview = (
     ? fullDesc.slice(0, MAX_DESC_LEN) + '...'
     : fullDesc;
 
+    // need this to show after pagination that its still seletect to not get a visual bug
+    const isToggled = toggledMatchIds.has(m.matchId);
+
     // construct HTML for single match
     matchesString += `
     <div id="${m.matchId}" class="match-container">
-      <div>
-        <b>Match found in file </b>
-        <span class="file-highlight">${relativePath}</span>
-        <b>, line ${m.lineNumber}:</b>
+      <div class="match-input">
+       <input
+          type="checkbox"
+          id="checkbox${m.matchId}"
+          class="match-toggle"
+          ${isToggled ? 'checked' : ''}
+        />
       </div>
-        <div class="icon-bar">      
-        <div class="jump-to-code-btn" data-match="${m.matchId}" title="Jump to code">&#8631;</div>
-        <div class="finding-btn" data-match="${m.matchId}" title="Finding">&#8982;</div>
-        <div class="falsePositive-btn" data-match="${m.matchId}" title="False Positive">&#10006;</div>
-        <div class="saveForLater-btn" data-match="${m.matchId}" title="Save for later">&#128427;</div>
+
+      <div class="match-content">
+        <div>
+          <b>Match found in file </b>
+          <span class="file-highlight">${relativePath}</span>
+          <b>, line ${m.lineNumber}:</b>
+        </div>
+        <div class="icon-bar">
+          <div class="jump-to-code-btn"   data-match="${m.matchId}" title="Jump to code">&#8631;</div>
+          <div class="finding-btn"        data-match="${m.matchId}" title="Finding">&#8982;</div>
+          <div class="falsePositive-btn"  data-match="${m.matchId}" title="False Positive">&#10006;</div>
+          <div class="saveForLater-btn"   data-match="${m.matchId}" title="Save for later">&#128427;</div>
+        </div>
+        <p>
+          <div class="code-line">
+            ${sanitizeContent(m.lineContent)
+              .replace(
+                highlightedCodeLine !== null ? highlightedCodeLine[0] : '',
+                (str) => `<span class="match-highlight">${str}</span>`
+              )}
+          </div>
+        </p>
+        <table class="match-meta">
+          <tr>
+            <td>Type:</td>
+            <td>${m.pattern.id}</td>
+          </tr>
+          <tr>
+            <td>Description:</td>
+            <td class="desc-cell">
+              <span class="desc-text">${truncatedDesc}</span>
+              ${
+                fullDesc.length > MAX_DESC_LEN
+                  ? `<button
+                      class="desc-toggle-btn"
+                      data-fulldesc="${fullDesc.replace(/"/g, '&quot;')}"
+                      data-truncdesc="${truncatedDesc.replace(/"/g, '&quot;')}"
+                    >Show more</button>`
+                  : ''
+              }
+            </td>
+          </tr>
+          <tr>
+            <td>Criticality:</td>
+            <td>${m.pattern.criticality}</td>
+          </tr>
+          <tr>
+            <td>Status:</td>
+            <td>${m.status}</td>
+          </tr>
+          <tr>
+            <td>Comment:</td>
+            <td>
+              <input
+                type="text"
+                class="comment-input"
+                data-match="${m.matchId}"
+                placeholder="No comment yet..."
+                title="${m.comment || 'No comment yet...'}"
+                value="${m.comment || ''}"
+              />
+            </td>
+          </tr>
+        </table>
+      </div>
     </div>
-    <p>
-      <div class="code-line">${sanitizeContent(m.lineContent)
-        .replace(highlightedCodeLine !== null ? highlightedCodeLine[0] : '', (str) => `<span class="match-highlight">${str}</span>`)}</div>
-    </p>
-    <table class="match-meta">
-      <tr>
-        <td>Type:</td>
-        <td>${m.pattern.id}</td>
-      </tr>      
-      <td>Description:</td>
-      <td class="desc-cell">
-        <span class="desc-text">${truncatedDesc}</span>
-        ${
-          fullDesc.length > MAX_DESC_LEN
-            ? `<button
-                  class="desc-toggle-btn"
-                  data-fulldesc="${fullDesc.replace(/"/g, '&quot;')}"
-                  data-truncdesc="${truncatedDesc.replace(/"/g, '&quot;')}"
-                >Show more</button>`
-            : ''
-        }
-      </td>      
-      <tr>
-        <td>Criticality:</td>
-        <td>${m.pattern.criticality}</td>
-      </tr>
-      <tr>
-        <td>Status:</td>
-        <td>${m.status}</td>
-      </tr>
-      <tr>
-        <td>Comment:</td>
-        <td>
-          <input type="text" 
-           class="comment-input" 
-           data-match="${m.matchId}" 
-           placeholder="No comment yet..." 
-           title="${m.comment ? m.comment : 'No comment yet...'}"
-           value="${m.comment ? m.comment : ''}" />
-        </td>
-      </tr>
-    </table>    
-    <br><br></div>`;
+`;
+
   });
   logger.debug("Fininshed creating HTML with Matches")
   // get path to stylesheet
@@ -246,31 +271,38 @@ const generateMatchesWebview = (
   </select>
   <button id="file-view">Show file Selection</button>
   <div class="pagination">
-  <span>Total Matches: ${totalMatches} | Page ${currentPage} of ${totalPages}</span>
-  
-  <button id="first-page" data-page="1" ${currentPage === 1 ? 'disabled' : ''}>⇤ First</button>
-  <button id="prev-page" data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}>← Prev</button>
+    <span>Total Matches: ${totalMatches} | Page ${currentPage} of ${totalPages}</span>
+    
+    <button id="first-page" data-page="1" ${currentPage === 1 ? 'disabled' : ''}>⇤ First</button>
+    <button id="prev-page" data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}>← Prev</button>
 
-  <span class="page-info">Page ${currentPage} / ${totalPages}</span>
+    <span class="page-info">Page ${currentPage} / ${totalPages}</span>
 
-  <button id="next-page" data-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''}>Next →</button>
-  <button id="last-page" data-page="${totalPages}" ${currentPage === totalPages ? 'disabled' : ''}>Last ⇥</button>
-</div>
+    <button id="next-page" data-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''}>Next →</button>
+    <button id="last-page" data-page="${totalPages}" ${currentPage === totalPages ? 'disabled' : ''}>Last ⇥</button>
+  </div>
 
   <div id="matches">
     ${matchesString}
   </div>
-    <div class="pagination">
-  <span>Total Matches: ${totalMatches} | Page ${currentPage} of ${totalPages}</span>
-  
-  <button id="first-page" data-page="1" ${currentPage === 1 ? 'disabled' : ''}>⇤ First</button>
-  <button id="prev-page" data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}>← Prev</button>
 
-  <span class="page-info">Page ${currentPage} / ${totalPages}</span>
+  <div id="action-bar" class="hidden">
+    <button id="btn-finding">Mark as Finding</button>
+    <button id="btn-false-positive">Mark as False Positive</button>
+    <button id="btn-save-later">Save for Later</button>
+    <button id="btn-unselect-all">Unselect All</button>
+  </div>
+  <div class="pagination">
+    <span>Total Matches: ${totalMatches} | Page ${currentPage} of ${totalPages}</span>
+    
+    <button id="first-page" data-page="1" ${currentPage === 1 ? 'disabled' : ''}>⇤ First</button>
+    <button id="prev-page" data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}>← Prev</button>
 
-  <button id="next-page" data-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''}>Next →</button>
-  <button id="last-page" data-page="${totalPages}" ${currentPage === totalPages ? 'disabled' : ''}>Last ⇥</button>
-</div>
+    <span class="page-info">Page ${currentPage} / ${totalPages}</span>
+
+    <button id="next-page" data-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''}>Next →</button>
+    <button id="last-page" data-page="${totalPages}" ${currentPage === totalPages ? 'disabled' : ''}>Last ⇥</button>
+  </div>
   <script src=${webview.asWebviewUri(scriptPath)}></script>
 </body>
 </html>`;

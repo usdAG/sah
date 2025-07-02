@@ -12,10 +12,11 @@ export interface Match {
   detectionType: string;
   status: string; // default: unprocessed ; finding, falsePositive, saveForLater
   comment?: string;
+  selected: boolean; // this is for the multiselect in the MatchesWebview
 }
 
 export let allMatches: Array<Match> = [];
-
+export let toggledMatchIds: Set<number> = new Set<number>();
 let matchIdCounter = 0;
 
 
@@ -68,6 +69,45 @@ export const setStatusAs = (matchId: string, status: string) => {
   vscode.commands.executeCommand('extension.showMatchesList');
 };
 
+export function updateToggleState(matchId: number, checked: boolean) {
+  if (checked) {
+    addToggledMatch(matchId)
+  } else {
+    removeToggledMatch(matchId);
+  }
+
+  const match = allMatches.find(m => m.matchId === matchId);
+  if (match) {
+    match.selected = checked;
+  }
+  logger.debug("toggledMatchIds: ", [...toggledMatchIds])
+}
+
+export function addToggledMatch(matchId: number) {
+  toggledMatchIds.add(matchId);
+  const match = allMatches.find(m => m.matchId === matchId);
+  if (match) match.selected = true;
+}
+
+export function removeToggledMatch(matchId: number) {
+  toggledMatchIds.delete(matchId);
+  const match = allMatches.find(m => m.matchId === matchId);
+  if (match) match.selected = false;
+}
+
+export function clearAllToggledMatches() {
+  toggledMatchIds.clear();
+  allMatches.forEach(m => m.selected = false);
+  vscode.commands.executeCommand('extension.showMatchesList');
+}
+
+
+export function setBatchAction(action: string) {
+  allMatches.filter(m => m.selected).forEach(m => m.status = action) 
+  clearAllToggledMatches()  
+}
+
+
 export const resetMatchValues = () => {
   allMatches.splice(0);
   matchIdCounter = 0;
@@ -88,7 +128,8 @@ export const addSemgrepMatch = (startLine: number, proof: string, path: string, 
     lineContent: proof,
     matchId: matchIdCounter,
     status: "unprocessed",
-    detectionType : "semgrep"
+    detectionType : "semgrep",
+    selected: false
   };
   allMatches.push(newMatch);
 };
