@@ -4,7 +4,8 @@ import generateMatchesWebview, { excludedPath, setRule, setStatus } from './matc
 import { setCriticality } from './matchesWebview';
 import {
   addComment,
-  allMatches, deduplicateMatches, jumpToCode, setStatusAs, updateAllMatches
+  allMatches, clearAllToggledMatches, deduplicateMatches,  jumpToCode, setBatchAction, setStatusAs, toggledMatchIds, updateAllMatches,
+  updateToggleState
 } from './matches';
 import {
   newProject, loadProject, saveProject, displayNoProjectWarning,
@@ -130,6 +131,7 @@ export const activate = (context: vscode.ExtensionContext) => {
     // listen for messages from the webview
     panel.webview.onDidReceiveMessage(
       async (message) => {
+        logger.debug("[Message]", message.command)
         switch (message.command) {
           case 'jmp':
             jumpToCode(message.data);
@@ -262,6 +264,31 @@ export const activate = (context: vscode.ExtensionContext) => {
               command: 'isFileExclusionSetResponse',              
               status: value         
             });
+            break;
+          }
+          case 'toggleMatch': {
+            const id = Number(message.matchId);
+            const checked = Boolean(message.checked)
+            logger.debug('toggleMatch',id,checked)
+            updateToggleState(id, checked);
+            break;
+          }
+          case 'getToggledMatches': {
+            const selected = Array.from(toggledMatchIds)
+            logger.debug("toogledMatchIds", selected)
+            panel.webview.postMessage({
+              command: 'getToggledMatchesResponse',              
+              selectedMatches: selected
+            });
+            break;
+          }
+          case 'batchAction': {
+            setBatchAction(message.action)
+            break;
+          }
+          case 'clearAllSelcted':{
+            clearAllToggledMatches()    
+            break;        
           }
           default:
             break;

@@ -11,6 +11,7 @@ const ruleSelect = document.getElementById("rules-selection");
 const commentInput = document.getElementsByClassName('comment-input');
 const fileViewBtn = document.getElementById('file-view');
 
+const actionBar = document.getElementById('action-bar');
 
 let state = vscode.getState();
 
@@ -149,6 +150,14 @@ window.addEventListener('message', event => {
     }
     updateHighlights()
   }
+
+  if(message.command === 'getToggledMatchesResponse') {
+    if (message.selectedMatches.length > 0) {
+      actionBar.classList.remove('hidden');
+    } else {
+      actionBar.classList.add('hidden');
+    }
+  }
 });
 
 
@@ -195,3 +204,84 @@ updateHighlights()
 vscode.postMessage({
   command: "isFileExclusionSet"
 })  
+
+// multiselect --> sens a message and toogles the select status of the match
+document.querySelectorAll('.match-toggle').forEach(checkbox => {
+    checkbox.addEventListener('change', event => {
+      const cb = /** @type {HTMLInputElement} */(event.currentTarget);
+      vscode.postMessage({
+        command: 'toggleMatch',
+        matchId: cb.id.replace('checkbox', ''),
+        checked: cb.checked
+      });
+      vscode.postMessage({
+        command: "getToggledMatches"
+      })  
+    });
+  });
+
+// multiselect action bar
+
+document.getElementById('btn-finding')
+  .addEventListener('click', () => {
+    vscode.postMessage({ command: 'batchAction', action: 'finding' });
+  });
+
+document.getElementById('btn-false-positive')
+  .addEventListener('click', () => {
+    vscode.postMessage({ command: 'batchAction', action: 'falsePositive' });
+  });
+
+document.getElementById('btn-save-later')
+  .addEventListener('click', () => {
+    vscode.postMessage({ command: 'batchAction', action: 'saveForLater' });
+  });
+
+document.getElementById('btn-unselect-all')
+  .addEventListener('click', () => {
+    vscode.postMessage({ command: 'clearAllSelcted' });
+    actionBar.classList.add('hidden');
+    // uncheck all the checkboxes in the UI
+    document.querySelectorAll('.match-toggle').forEach(cb => {
+      cb.checked = false;
+    });
+  });
+
+// Initialize visibility on load
+vscode.postMessage({
+  command: "getToggledMatches"
+})  
+
+
+/* logic to move the action bar for select */
+let isDragging = false;
+let dragOffsetX = 0;
+let dragOffsetY = 0;
+
+actionBar.addEventListener('mousedown', e => {
+  // start dragging if left‑button and not clicking a button inside
+  if (e.button !== 0 || e.target.tagName === 'BUTTON') return;
+  isDragging = true;
+
+  // offset between mouse and top-left corner of the bar
+  const rect = actionBar.getBoundingClientRect();
+  dragOffsetX = e.clientX - rect.left;
+  dragOffsetY = e.clientY - rect.top;
+});
+
+document.addEventListener('mousemove', e => {
+  if (!isDragging) return;
+  const newLeft = e.clientX - dragOffsetX;
+  const newTop  = e.clientY - dragOffsetY;
+  // clamping --> doesn't go off‑screen
+  actionBar.style.left   = Math.max(0, newLeft) + 'px';
+  actionBar.style.top    = Math.max(0, newTop)  + 'px';
+  actionBar.style.bottom = 'auto';
+  actionBar.style.right  = 'auto';
+});
+
+document.addEventListener('mouseup', () => {
+  if (isDragging) {
+    isDragging = false;
+  }
+});
