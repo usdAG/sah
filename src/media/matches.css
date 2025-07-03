@@ -113,6 +113,7 @@ button:hover {
 
 /* hide the real checkbox*/
 .match-toggle {
+  cursor: pointer;
   position: absolute;
   top: 0; left: 0;
   width: 32px; height: 100%;

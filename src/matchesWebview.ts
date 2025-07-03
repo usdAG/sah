@@ -154,6 +154,7 @@ const generateMatchesWebview = (
       <div class="match-input">
        <input
           type="checkbox"
+          title="Select"
           id="checkbox${m.matchId}"
           class="match-toggle"
           ${isToggled ? 'checked' : ''}
