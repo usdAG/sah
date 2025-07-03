@@ -1,7 +1,7 @@
 export interface Pattern {
   id: string;
   description: string;
-  criticality: number;
+  criticality: string;
   pattern: RegExp | string;
   lang: string;
 }

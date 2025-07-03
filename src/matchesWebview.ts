@@ -11,14 +11,14 @@ const sanitizeContent = (string: string) => {
 }
 
 let selectedStatus = "unprocessed"
-let selectedCriticality = 0;
+let selectedCriticality = "0";
 let selectedRule = "all";
 export let excludedPath: string[] = [];
 
 
 export const setStatus = (newStatus: string, panel: vscode.WebviewPanel) => {
   selectedStatus = newStatus;
-  selectedCriticality = 0;
+  selectedCriticality = "0";
   selectedRule = "all"
   panel.webview.postMessage({
     command: 'updateState',
@@ -31,7 +31,7 @@ export const setStatus = (newStatus: string, panel: vscode.WebviewPanel) => {
 };
 
 
-export const setCriticality = (newCriticality: number, panel: vscode.WebviewPanel) => {
+export const setCriticality = (newCriticality: string, panel: vscode.WebviewPanel) => {
   selectedCriticality = newCriticality;
   selectedRule = "all"
   panel.webview.postMessage({
@@ -88,22 +88,39 @@ const generateMatchesWebview = (
   //logger.debug("Matches for webview generation (after status)",_matches)
 
   // Filter for Criticality 
-  // if selectedCriticality > 5 (6 7) sort them asc or desc
-  if (selectedCriticality > 5){
-    // don't add "logger.debug" into a sorting algo :D
-    logger.debug('Criticality filter with', selectedCriticality)
-    _matches.sort((a, b) => {      
-      if (selectedCriticality == 6) {
-        return a.pattern.criticality - b.pattern.criticality; // Ascending
-      } else {
-        return b.pattern.criticality - a.pattern.criticality; // Descending
-      }
-    });
-    logger.debug("end sorting")
-  } else {
+  const criticalityRank = {
+    INFO: 1,
+    LOW: 2,
+    MEDIUM: 3,
+    HIGH: 4,
+    CRITICAL: 5
+  };
+  logger.debug('Criticality filter with', selectedCriticality);    
+  // if selectedCriticality (6 7) sort them asc or desc
+  // typescript maaaagic
+  if (selectedCriticality === "6") {
+    // Ascending
+    _matches.sort((a, b) => 
+      criticalityRank[a.pattern.criticality as keyof typeof criticalityRank] - criticalityRank[b.pattern.criticality as keyof typeof criticalityRank]
+    );
+  } 
+  else if (selectedCriticality === "7") {
+    // Descending
+    _matches.sort((a, b) => 
+      criticalityRank[b.pattern.criticality as keyof typeof criticalityRank] - criticalityRank[a.pattern.criticality as keyof typeof criticalityRank]
+    );
+  } 
+  else if (selectedCriticality !== "0"){
     // else filter _matches dependent on selected criticality
-    _matches = selectedCriticality == 0 ? _matches : _matches.filter((m) => m.pattern.criticality == selectedCriticality);
-    logger.debug('Criticality filter with', selectedCriticality);      
+    const selectedLabel = {
+      "1": "INFO",
+      "2": "LOW",
+      "3": "MEDIUM",
+      "4": "HIGH",
+      "5": "CRITICAL"
+    }[selectedCriticality];
+    _matches = _matches.filter(m => m.pattern.criticality === selectedLabel);
+    
   }
   //logger.debug("Matches for webview generation (after criticality)",_matches)
 
@@ -259,11 +276,11 @@ const generateMatchesWebview = (
   </select>
   <select id="criticality-selection">
     <option value="0">All Criticalities</options>
-    <option value="1">Criticality 1</options>
-    <option value="2">Criticality 2</options>
-    <option value="3">Criticality 3</options>
-    <option value="4">Criticality 4</options>
-    <option value="5">Criticality 5</options>
+    <option value="1">INFO</options>
+    <option value="2">LOW</options>
+    <option value="3">MEDIUM</options>
+    <option value="4">HIGH</options>
+    <option value="5">CRITICAL</options>
     <option value="6">Ascending Order</options>
     <option value="7">Descending Order</options>
   </select>
