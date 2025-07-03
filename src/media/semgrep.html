@@ -60,7 +60,7 @@
         <span class="info-tooltip">
           <span class="info-icon" tabindex="0" aria-label="Help">&#x1F6C8;</span>
           <span class="tooltip" id="configPathTooltip">
-            The output filename will be auto-generated if left blank.<br>
+            The output filename will be auto-generated if left blank or a folder is selected.<br>
             It combines the current date, the word "semgrep", and the ruleset name (e.g., <code>20240612_semgrep_auto.json</code>).<br>
             The file will be saved at the project root, making it easy to find and share with others.<br>
             This can be especially helpful for large projects or long-running scans.
@@ -69,7 +69,7 @@
         </span>
       </label>
       <div class="input-wrapper">
-        <button type="button" id="outputPathWizard" class="folder-btn">Select Folder</button>  
+        <button type="button" id="outputPathWizard" class="folder-btn">Select File/Folder</button>  
         <input type="text" id="outputPath" placeholder="<Date in YYYYMMDD>_semgrep_<ruleset>.json">
       </div>
 

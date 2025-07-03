@@ -146,6 +146,72 @@ export function isRelative(inputPath: string): boolean{
   }
 }
 
+
+export async function handleOutputPathSelection(config: string, panel: vscode.WebviewPanel) {
+  // returns a postMessage to the webView with the updated OutputPath 
+  let isFolder = false;
+  let selectedPath = "";
+
+  const choice = await vscode.window.showQuickPick(['File', 'Folder'], {
+      placeHolder: 'Select target type: File or Folder',
+    });
+
+    if (!choice) {
+      vscode.window.showWarningMessage('No option selected.');
+      return;
+    }
+
+    isFolder = choice === 'Folder';    
+  
+  if (isFolder){
+    
+    const options: vscode.OpenDialogOptions = {      
+      canSelectFolders: true,
+      openLabel: "Select a folder to save the Semgrep output"
+    };
+
+    const fileUri = await vscode.window.showOpenDialog(options);
+    if (!fileUri) {
+      vscode.window.showWarningMessage("No folder or file was selected.");
+      return;
+    }
+    try {
+      const stat = await vscode.workspace.fs.stat(fileUri[0]);
+
+      if (stat.type === vscode.FileType.Directory) {
+        selectedPath = generateSemgrepOutputFilename(config,fileUri[0].fsPath)
+        
+      }
+    } catch (err) {
+      vscode.window.showErrorMessage(`Error checking selected path: ${err}`);
+      return;
+    }
+
+  } else {
+    const options: vscode.SaveDialogOptions = {
+      filters: { 'JSON Files': ['json'], 'All Files': ['*'] },
+      saveLabel: "Select file for Semgrep output"
+    };
+
+  const fileUri = await vscode.window.showSaveDialog(options);
+
+    if (!fileUri) {
+      vscode.window.showWarningMessage("No file was selected.");
+      return;
+    }
+
+    selectedPath = fileUri.fsPath;
+    logger.debug("SelectedPath:", selectedPath)
+
+  }  
+   // Post the selected path to the webview
+   logger.debug("SelectedPath updated:",selectedPath)
+  panel.webview.postMessage({
+      command: "outputPathBtnResponse",
+      path: selectedPath,
+    });
+}
+
 export async function handlePathSelection(
   command: string,
   type: string,
@@ -188,6 +254,61 @@ export async function handlePathSelection(
   });
 }
 
+
+
+function generateSemgrepOutputFilename(config: string, output?: string): string {
+  /*
+  Generate a Semgrep output filename based on config and output hint.
+  If output is a folder, generate filename in that folder.
+  */
+  const currentDate = new Date();
+  const formattedDate = currentDate.toISOString().split('T')[0].replace(/-/g, '');
+
+  function defaultNameFragment(config: string): string {
+    return config
+      .split(',')
+      .map(c => c.trim())
+      .filter(Boolean)
+      .map(c => {
+        if (c === "auto") return "auto";
+        if (c.startsWith("http://") || c.startsWith("https://")) {
+          const segment = c.split('//').pop();
+          if (!segment) {
+            vscode.window.showWarningMessage(`Invalid config URL: "${c}" - no rule or filename found after the last slash.`);
+            return c.replace(/\W+/g, "_");
+          }
+          return segment.replace(/\W+/g, "_");
+        }
+        return c.replace(/^.*[\\/]/, '').replace(/\W+/g, "_");
+      })
+      .slice(0, 3)
+      .join("__");
+  }
+
+  const defaultFilename = `${formattedDate}_semgrep_${defaultNameFragment(config)}.json`;
+
+  if (!output || output.trim() === "") {
+    return defaultFilename;
+  }
+
+  try {
+    // If path exists and is a directory (synchronously, safe for UI):
+    if (fs.existsSync(output) && fs.statSync(output).isDirectory()) {
+      // Place generated file in the given directory
+      return path.join(output, defaultFilename);
+    }
+  } catch (e) {
+    vscode.window.showErrorMessage(`Error while trying to join your folder with the defaultFilename: "${e}"`);
+  }
+
+  // If output has no ".json", append .json
+  if (!output.endsWith('.json')) {
+    return `${output}.json`;
+  } else {
+    return output;
+  }
+}
+
 export async function startSemgrepScan(
   config: string,
   outputFile: string,
@@ -223,60 +344,6 @@ export async function startSemgrepScan(
   
   let semgrepCommand = buildSemgrepCommand(semgrepPath, config)
 
-
-  
-  function generateSemgrepOutputFilename(config: string, output?: string): string {
-    /*
-    Generate a Semgrep output filename based on config and output hint.
-    If output is a folder, generate filename in that folder.
-    */
-    const currentDate = new Date();
-    const formattedDate = currentDate.toISOString().split('T')[0].replace(/-/g, '');
-
-    function defaultNameFragment(config: string): string {
-      return config
-        .split(',')
-        .map(c => c.trim())
-        .filter(Boolean)
-        .map(c => {
-          if (c === "auto") return "auto";
-          if (c.startsWith("http://") || c.startsWith("https://")) {
-            const segment = c.split('//').pop();
-            if (!segment) {
-              vscode.window.showWarningMessage(`Invalid config URL: "${c}" - no rule or filename found after the last slash.`);
-              return c.replace(/\W+/g, "_");
-            }
-            return segment.replace(/\W+/g, "_");
-          }
-          return c.replace(/^.*[\\/]/, '').replace(/\W+/g, "_");
-        })
-        .slice(0, 3)
-        .join("__");
-    }
-
-    const defaultFilename = `${formattedDate}_semgrep_${defaultNameFragment(config)}.json`;
-
-    if (!output || output.trim() === "") {
-      return defaultFilename;
-    }
-
-    try {
-      // If path exists and is a directory (synchronously, safe for UI):
-      if (fs.existsSync(output) && fs.statSync(output).isDirectory()) {
-        // Place generated file in the given directory
-        return path.join(output, defaultFilename);
-      }
-    } catch (e) {
-      vscode.window.showErrorMessage(`Error while trying to join your folder with the defaultFilename: "${e}"`);
-    }
-
-    // If output has no ".json", append .json
-    if (!output.endsWith('.json')) {
-      return `${output}.json`;
-    } else {
-      return output;
-    }
-  }
 
   outputFile = generateSemgrepOutputFilename(config, outputFile);
   // yank the isRelative function and use it here to validate if the outputfile 
