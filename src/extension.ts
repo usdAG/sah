@@ -160,6 +160,9 @@ export const activate = (context: vscode.ExtensionContext) => {
           case 'showMatches':
             vscode.commands.executeCommand('extension.showMatchesList');
             break;
+          case 'showSemgrep':
+            vscode.commands.executeCommand('extension.importSemgrepScan')
+            break;
           case 'startSemgrepImport':
             logger.debug("startSemgrepImport called")
             startImportSemgrepJson(panel, message.path);
