@@ -79,29 +79,31 @@ export async function finalImportSemgrepJson(){
         await vscode.workspace.openTextDocument(absolutePath).then((file)=>{
           proof = file.getText(new vscode.Range(startLine-1, startCol-1, endLine-1, endCol-1));              
         });
-        let criticality : number = 0
+        let criticality : string = ""
         switch(result.extra.severity){
-        case "INFO":
-        case "INFORMATIONAL":
-            criticality = 1;
-            break;
-        case "LOW":
-            criticality = 2;
-            break;
-        case "WARNING":
-        case "MEDIUM":
-            criticality = 3;
-            break;
-        case "ERROR":
-        case "HIGH":
-            criticality = 4;
-            break;
-        case "CRITICAL":
-            criticality = 5;
-            break;
-        default:
-            criticality = 0;
-            break;
+          case "INFO":
+              criticality = "INFO"
+              break
+          case "INFORMATIONAL":
+              criticality = "INFO";
+              break;
+          case "LOW":
+              criticality = "LOW";
+              break;
+          case "WARNING":
+          case "MEDIUM":
+              criticality = "MEDIUM";
+              break;
+          case "ERROR":
+          case "HIGH":
+              criticality = "HIGH";
+              break;
+          case "CRITICAL":
+              criticality = "CRITICAL";
+              break;
+          default:
+              criticality = "DID NOT MATCH - INFO LOW MEDIUM HIGH CRITICAL";
+              break;
         }
 
         const ruleSplinters = result.check_id.toString().split(".");
