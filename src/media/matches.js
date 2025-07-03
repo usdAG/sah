@@ -10,6 +10,7 @@ const criticalitySelection = document.getElementById('criticality-selection');
 const ruleSelect = document.getElementById("rules-selection");
 const commentInput = document.getElementsByClassName('comment-input');
 const fileViewBtn = document.getElementById('file-view');
+const jmpToSemgrepBtn = document.getElementById('jmp-to-semgrep');
 
 const actionBar = document.getElementById('action-bar');
 
@@ -115,6 +116,10 @@ fileViewBtn.addEventListener('click', ()=>{
   vscode.postMessage({
     command: "isFileExclusionSet"
   })  
+});
+
+jmpToSemgrepBtn.addEventListener('click', () => {
+  vscode.postMessage({ command: 'showSemgrep'});
 });
 
 document.querySelectorAll(".pagination button").forEach(button => {

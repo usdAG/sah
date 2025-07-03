@@ -280,7 +280,8 @@ button:hover {
 #status-selection,
 #criticality-selection,
 #rules-selection,
-#file-view {
+#file-view,
+#jmp-to-semgrep {
   width: 200px;
   padding: 8px;
   font-size: 14px;
@@ -294,14 +295,16 @@ button:hover {
 #status-selection:hover,
 #criticality-selection:hover,
 #rules-selection:hover,
-#file-view:hover {
+#file-view:hover,
+#jmp-to-semgrep:hover {
   border-color: var(--vscode-focusBorder);
   box-shadow: 0 0 5px var(--vscode-focusBorder);
 }
 #status-selection:focus,
 #criticality-selection:focus,
 #rules-selection:focus,
-#file-view:focus {
+#file-view:focus,
+#jmp-to-semgrep:focus {
   outline: none;
   border-color: var(--vscode-focusBorder);
   box-shadow: 0 0 5px var(--vscode-focusBorder);
@@ -311,7 +314,8 @@ button:hover {
 #status-selection.highlighted,
 #criticality-selection.highlighted,
 #rules-selection.highlighted,
-#file-view.highlighted {
+#file-view.highlighted,
+#jmp-to-semgrep.file-highlight {
   border-color: var(--vscode-editorWarning-foreground);
   box-shadow: 0 0 5px var(--vscode-editorWarning-foreground);
 }
