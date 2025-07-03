@@ -8,6 +8,7 @@ import * as path from 'path';
 import { logger } from './logging';
 
 export let importedMatches : number = 0;  
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export let jsonData : any;
 export let absolute_path: string;
 
@@ -29,6 +30,7 @@ export async function startImportSemgrepJson(panel: vscode.WebviewPanel, file_pa
       // JSON parsen
       jsonData = JSON.parse(fileContent);
     } catch (error) {
+        logger.error("Unable to parse SemgrepContnent: ", error)
         vscode.window.showErrorMessage(`Invalid JSON file at : ${path}`);
         return;
     }   
@@ -85,6 +87,7 @@ export async function finalImportSemgrepJson(){
             break;
         case "LOW":
             criticality = 2;
+            break;
         case "WARNING":
         case "MEDIUM":
             criticality = 3;
@@ -141,6 +144,7 @@ export function isRelative(inputPath: string): boolean{
     }
     return true;
   } catch (error) {
+    logger.error("While validatining whether or not the path is relative an error accured ", error)
     // If any error occurs return false
     return false;
   }
@@ -222,61 +226,6 @@ export async function startSemgrepScan(
   }
   
   let semgrepCommand = buildSemgrepCommand(semgrepPath, config)
-
-
-  
-  function generateSemgrepOutputFilename(config: string, output?: string): string {
-    /*
-    Generate a Semgrep output filename based on config and output hint.
-    If output is a folder, generate filename in that folder.
-    */
-    const currentDate = new Date();
-    const formattedDate = currentDate.toISOString().split('T')[0].replace(/-/g, '');
-
-    function defaultNameFragment(config: string): string {
-      return config
-        .split(',')
-        .map(c => c.trim())
-        .filter(Boolean)
-        .map(c => {
-          if (c === "auto") return "auto";
-          if (c.startsWith("http://") || c.startsWith("https://")) {
-            const segment = c.split('//').pop();
-            if (!segment) {
-              vscode.window.showWarningMessage(`Invalid config URL: "${c}" - no rule or filename found after the last slash.`);
-              return c.replace(/\W+/g, "_");
-            }
-            return segment.replace(/\W+/g, "_");
-          }
-          return c.replace(/^.*[\\/]/, '').replace(/\W+/g, "_");
-        })
-        .slice(0, 3)
-        .join("__");
-    }
-
-    const defaultFilename = `${formattedDate}_semgrep_${defaultNameFragment(config)}.json`;
-
-    if (!output || output.trim() === "") {
-      return defaultFilename;
-    }
-
-    try {
-      // If path exists and is a directory (synchronously, safe for UI):
-      if (fs.existsSync(output) && fs.statSync(output).isDirectory()) {
-        // Place generated file in the given directory
-        return path.join(output, defaultFilename);
-      }
-    } catch (e) {
-      vscode.window.showErrorMessage(`Error while trying to join your folder with the defaultFilename: "${e}"`);
-    }
-
-    // If output has no ".json", append .json
-    if (!output.endsWith('.json')) {
-      return `${output}.json`;
-    } else {
-      return output;
-    }
-  }
 
   outputFile = generateSemgrepOutputFilename(config, outputFile);
   // yank the isRelative function and use it here to validate if the outputfile 
@@ -596,8 +545,62 @@ function buildSemgrepCommand(semgrepPath: string, config: string): string {
   }
 
   const configArgs = configs.join(' ');
-  let semgrepCommand = `${semgrepPath} scan ${configArgs} --strict --json`;
+  const semgrepCommand = `${semgrepPath} scan ${configArgs} --strict --json`;
   return semgrepCommand;
+}
+
+
+function generateSemgrepOutputFilename(config: string, output?: string): string {
+  /*
+  Generate a Semgrep output filename based on config and output hint.
+  If output is a folder, generate filename in that folder.
+  */
+  const currentDate = new Date();
+  const formattedDate = currentDate.toISOString().split('T')[0].replace(/-/g, '');
+
+  function defaultNameFragment(config: string): string {
+    return config
+      .split(',')
+      .map(c => c.trim())
+      .filter(Boolean)
+      .map(c => {
+        if (c === "auto") return "auto";
+        if (c.startsWith("http://") || c.startsWith("https://")) {
+          const segment = c.split('//').pop();
+          if (!segment) {
+            vscode.window.showWarningMessage(`Invalid config URL: "${c}" - no rule or filename found after the last slash.`);
+            return c.replace(/\W+/g, "_");
+          }
+          return segment.replace(/\W+/g, "_");
+        }
+        return c.replace(/^.*[\\/]/, '').replace(/\W+/g, "_");
+      })
+      .slice(0, 3)
+      .join("__");
+  }
+
+  const defaultFilename = `${formattedDate}_semgrep_${defaultNameFragment(config)}.json`;
+
+  if (!output || output.trim() === "") {
+    return defaultFilename;
+  }
+
+  try {
+    // If path exists and is a directory (synchronously, safe for UI):
+    if (fs.existsSync(output) && fs.statSync(output).isDirectory()) {
+      // Place generated file in the given directory
+      return path.join(output, defaultFilename);
+    }
+  } catch (e) {
+    vscode.window.showErrorMessage(`Error while trying to join your folder with the defaultFilename: "${e}"`);
+  }
+
+  // If output has no ".json", append .json
+  if (!output.endsWith('.json')) {
+    return `${output}.json`;
+  } else {
+    return output;
+  }
 }
 
 export function goToMatches(){
