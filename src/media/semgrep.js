@@ -78,9 +78,12 @@
     });
   })
 
+  // add a listener that create a filepicker and
+  // appends default folder if a folder is selected
   outputPathBtn.addEventListener('click', ()=>{
     vscode.postMessage({
-      command: 'outputPathBtn'
+      command: 'outputPathBtn',
+      config: configPath.value
     });
   })
 

@@ -12,7 +12,7 @@ import {
 } from './projects';
 import generateStartWebview from './startWebview';
 import generateSemgrepWebview from './semgrepWebview';
-import { startImportSemgrepJson, isRelative, finalImportSemgrepJson, handlePathSelection, startSemgrepScan, goToMatches,} from './semgrep';
+import { startImportSemgrepJson, isRelative, finalImportSemgrepJson, handlePathSelection, startSemgrepScan, goToMatches, handleOutputPathSelection} from './semgrep';
 import { FileExplorerProvider } from './fileView';
 import { logger } from './logging';
 
@@ -174,6 +174,8 @@ export const activate = (context: vscode.ExtensionContext) => {
             break;
           }        
           case 'configPathBtn':
+            // todo migrate this to the same handler
+            // as for outputPathBtn
             handlePathSelection(
               'configPathBtn',
               'dynamic',
@@ -183,14 +185,8 @@ export const activate = (context: vscode.ExtensionContext) => {
             break;
         
           case 'outputPathBtn':
-            handlePathSelection(
-              'outputPathBtn',
-              'folder',
-              'Select a folder for the output destination',
-              panel
-            );
-            break; 
-          
+            handleOutputPathSelection(message.config, panel)            
+            break;
           case 'startImportSemgrepBtn':
             handlePathSelection(
               'startImportSemgrepBtn',
