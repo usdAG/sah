@@ -671,60 +671,6 @@ function buildSemgrepCommand(semgrepPath: string, config: string): string {
   return semgrepCommand;
 }
 
-
-function generateSemgrepOutputFilename(config: string, output?: string): string {
-  /*
-  Generate a Semgrep output filename based on config and output hint.
-  If output is a folder, generate filename in that folder.
-  */
-  const currentDate = new Date();
-  const formattedDate = currentDate.toISOString().split('T')[0].replace(/-/g, '');
-
-  function defaultNameFragment(config: string): string {
-    return config
-      .split(',')
-      .map(c => c.trim())
-      .filter(Boolean)
-      .map(c => {
-        if (c === "auto") return "auto";
-        if (c.startsWith("http://") || c.startsWith("https://")) {
-          const segment = c.split('//').pop();
-          if (!segment) {
-            vscode.window.showWarningMessage(`Invalid config URL: "${c}" - no rule or filename found after the last slash.`);
-            return c.replace(/\W+/g, "_");
-          }
-          return segment.replace(/\W+/g, "_");
-        }
-        return c.replace(/^.*[\\/]/, '').replace(/\W+/g, "_");
-      })
-      .slice(0, 3)
-      .join("__");
-  }
-
-  const defaultFilename = `${formattedDate}_semgrep_${defaultNameFragment(config)}.json`;
-
-  if (!output || output.trim() === "") {
-    return defaultFilename;
-  }
-
-  try {
-    // If path exists and is a directory (synchronously, safe for UI):
-    if (fs.existsSync(output) && fs.statSync(output).isDirectory()) {
-      // Place generated file in the given directory
-      return path.join(output, defaultFilename);
-    }
-  } catch (e) {
-    vscode.window.showErrorMessage(`Error while trying to join your folder with the defaultFilename: "${e}"`);
-  }
-
-  // If output has no ".json", append .json
-  if (!output.endsWith('.json')) {
-    return `${output}.json`;
-  } else {
-    return output;
-  }
-}
-
 export function goToMatches(){
   vscode.commands.executeCommand('extension.showMatchesList');
 }
