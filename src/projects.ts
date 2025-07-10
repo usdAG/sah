@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import { allMatches, Match, updateAllMatches } from './matches';
@@ -10,7 +11,7 @@ export const saveProject = () => {
     const allMatchesParsed: Array<Match> = [];
     allMatches.forEach((m) => {
       const matchParsed = m;
-      matchParsed.pattern.pattern = typeof m.pattern.pattern === 'string' ? m.pattern.pattern : m.pattern.pattern.source;
+      matchParsed.pattern.pattern = m.pattern.pattern;
       allMatchesParsed.push(matchParsed);
     });
     const finalJSON = {
@@ -23,6 +24,7 @@ export const saveProject = () => {
   }
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export const newProject = (callback: Function) => {
   vscode.window.showSaveDialog({ saveLabel: 'Save', filters: { JSON: ['json'] } }).then((uri) => {
     if (!uri) {
@@ -47,6 +49,7 @@ export const newProject = (callback: Function) => {
   });
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export const loadProject = (callback: Function) => {
   logger.debug("loadProject")
   vscode.window.showOpenDialog({ openLabel: 'Load', filters: { JSON: ['json'] } }).then((uri) => {

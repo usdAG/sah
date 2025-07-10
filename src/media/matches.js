@@ -1,68 +1,45 @@
 // eslint-disable-next-line no-undef
 const vscode = acquireVsCodeApi();
-const jumpToCodeBtns = document.getElementsByClassName('jump-to-code-btn');
-const findingsBtns = document.getElementsByClassName('finding-btn');
-const falsePositiveBtns = document.getElementsByClassName('falsePositive-btn');
-const saveForLaterBtns = document.getElementsByClassName('saveForLater-btn');
+const jumpToCodeBtns    = Array.from(document.getElementsByClassName('jump-to-code-btn'));
+const findingsBtns      = Array.from(document.getElementsByClassName('finding-btn'));
+const falsePositiveBtns = Array.from(document.getElementsByClassName('falsePositive-btn'));
+const saveForLaterBtns  = Array.from(document.getElementsByClassName('saveForLater-btn'));
+const commentInputs     = Array.from(document.getElementsByClassName('comment-input'));
 
-const statusSelection = document.getElementById('status-selection');
+const statusSelection      = document.getElementById('status-selection');
 const criticalitySelection = document.getElementById('criticality-selection');
-const ruleSelect = document.getElementById("rules-selection");
-const commentInput = document.getElementsByClassName('comment-input');
-const fileViewBtn = document.getElementById('file-view');
+const ruleSelect           = document.getElementById("rules-selection");
+
+const fileViewBtn     = document.getElementById('file-view');
 const jmpToSemgrepBtn = document.getElementById('jmp-to-semgrep');
 
 const actionBar = document.getElementById('action-bar');
 
-let state = vscode.getState();
+const selectsToUpdate = [
+  { element: statusSelection, defaultValue: 'unprocessed' },
+  { element: criticalitySelection, defaultValue: '0' },
+  { element: ruleSelect, defaultValue: 'all' }  
+];
 
-for (let i = 0; i < jumpToCodeBtns.length; i += 1) {
-  const id = jumpToCodeBtns[i].dataset.match;
-  jumpToCodeBtns[i].addEventListener('click', () => {
-    vscode.postMessage({
-      command: 'jmp',
-      data: id,
-    });
-  });
+let state = vscode.getState();
+// Binder for multiple elements
+function bindAll(elements, handler){
+  elements.forEach(element => element.addEventListener('click', handler));
 }
-for (let i = 0; i < findingsBtns.length; i += 1) {
-  const id = findingsBtns[i].dataset.match;
-  findingsBtns[i].addEventListener('click', () => {
-    vscode.postMessage({
-      command: 'setStatusAsFinding',
-      data: id,
-    });
+const post = msg => vscode.postMessage(msg);
+
+bindAll(jumpToCodeBtns,    e => post({ command: 'jmp', data: e.currentTarget.dataset.match }));
+bindAll(findingsBtns,      e => post({ command: 'setStatusAsFinding', data: e.currentTarget.dataset.match }));
+bindAll(falsePositiveBtns, e => post({ command: 'setStatusAsFalsePositive', data: e.currentTarget.dataset.match }));
+bindAll(saveForLaterBtns,  e => post({ command: 'setStatusAsSaveForLater', data: e.currentTarget.dataset.match }));
+
+commentInputs.forEach(input => {
+  input.addEventListener('change', () => {
+    post({ command: 'addComment', data_id: input.dataset.match, data: input.value });
+    input.title = input.value;
+    post({ command: 'getToggledMatches' });
   });
-}
-for (let i = 0; i < falsePositiveBtns.length; i += 1) {
-  const id = falsePositiveBtns[i].dataset.match;
-  falsePositiveBtns[i].addEventListener('click', () => {
-    vscode.postMessage({
-      command: 'setStatusAsFalsePositive',
-      data: id,
-    });
-  });
-}
-for (let i = 0; i < saveForLaterBtns.length; i += 1) {
-  const id = saveForLaterBtns[i].dataset.match;
-  saveForLaterBtns[i].addEventListener('click', () => {
-    vscode.postMessage({
-      command: 'setStatusAsSaveForLater',
-      data: id,
-    });
-  });
-}
-for (let i = 0; i < commentInput.length; i += 1) {
-  const id = commentInput[i].dataset.match;
-  commentInput[i].addEventListener('change', () => {
-    vscode.postMessage({
-      command: 'addComment',
-      data_id: id,
-      data: commentInput[i].value
-    });
-    event.target.setAttribute("title", commentInput[i].value);
-  });
-}
+});
 
 if(state != null && state.status != null){
   statusSelection.value = state.status;
@@ -187,12 +164,6 @@ document.querySelectorAll('.desc-toggle-btn').forEach(btn => {
 });
 
 
-const selectsToUpdate = [
-  { element: statusSelection, defaultValue: 'unprocessed' },
-  { element: criticalitySelection, defaultValue: '0' },
-  { element: ruleSelect, defaultValue: 'all' }  
-];
-
 function updateHighlights() {
   selects = selectsToUpdate
   selects.forEach(({ element, defaultValue }) => {
@@ -210,20 +181,20 @@ vscode.postMessage({
   command: "isFileExclusionSet"
 })  
 
-// multiselect --> sens a message and toogles the select status of the match
+// multiselect --> sends a message and toggles the select status of the match
 document.querySelectorAll('.match-toggle').forEach(checkbox => {
-    checkbox.addEventListener('change', event => {
-      const cb = /** @type {HTMLInputElement} */(event.currentTarget);
-      vscode.postMessage({
-        command: 'toggleMatch',
-        matchId: cb.id.replace('checkbox', ''),
-        checked: cb.checked
-      });
-      vscode.postMessage({
-        command: "getToggledMatches"
-      })  
+  checkbox.addEventListener('change', event => {
+    const cb = /** @type {HTMLInputElement} */(event.currentTarget);
+    vscode.postMessage({
+      command: 'toggleMatch',
+      matchId: cb.id.replace('checkbox', ''),
+      checked: cb.checked
     });
+    vscode.postMessage({
+      command: "getToggledMatches"
+    })  
   });
+});
 
 // multiselect action bar
 
@@ -259,7 +230,7 @@ vscode.postMessage({
 
 
 /* logic to move the action bar for select */
-let isDragging = false;
+let isDragging  = false;
 let dragOffsetX = 0;
 let dragOffsetY = 0;
 

@@ -4,13 +4,13 @@ const vscode = acquireVsCodeApi();
 /*
 semgrep import 
 */
-const startImportSemgrep = document.getElementById('startImportSemgrep');
-const semgrepPath = document.getElementById('semgrepPath');
-const pathStatus = document.getElementById('pathStatus');
-const semgrepScanImportPath = document.getElementById('semgrepScanImportPath');
+const startImportSemgrep       = document.getElementById('startImportSemgrep');
+const semgrepPath              = document.getElementById('semgrepPath');
+const pathStatus               = document.getElementById('pathStatus');
+const semgrepScanImportPath    = document.getElementById('semgrepScanImportPath');
 const semgrepScanImportPathBtn = document.getElementById('semgrepScanImportPathBtn')
-const semgrepPathLabel = document.getElementById('semgrepPathLabel');
-//store the relativePath to strip it from the userinput
+const semgrepPathLabel         = document.getElementById('semgrepPathLabel');
+// store the relativePath to strip it from the userinput
 let relativePath = "";
 
 startImportSemgrep.addEventListener('click', ()=>{
@@ -62,14 +62,14 @@ window.addEventListener('message', (event) => {
 semgrep scan 
 */
 const startSemgrepScan = document.getElementById('startSemgrepScan');
-const configPath = document.getElementById('configPath');
-const outputPath = document.getElementById('outputPath');
-const configPathBtn = document.getElementById('configPathWizard');
-const outputPathBtn = document.getElementById('outputPathWizard');
-const excludePattern = document.getElementById('excludePattern');
-const includePattern = document.getElementById('includePattern');
-const scanStatus = document.getElementById('scanStatus');
-const goToMatches = document.getElementById('goToMatches');
+const configPath       = document.getElementById('configPath');
+const outputPath       = document.getElementById('outputPath');
+const configPathBtn    = document.getElementById('configPathWizard');
+const outputPathBtn    = document.getElementById('outputPathWizard');
+const excludePattern   = document.getElementById('excludePattern');
+const includePattern   = document.getElementById('includePattern');
+const scanStatus       = document.getElementById('scanStatus');
+const goToMatches      = document.getElementById('goToMatches');
 
 configPathBtn.addEventListener('click', ()=>{
   vscode.postMessage({
@@ -98,7 +98,7 @@ startSemgrepScan.addEventListener('click', () => {
 
 goToMatches.addEventListener('click', () => {
   vscode.postMessage({
-    command: 'goToMatches'
+    command: 'showMatches'
   })
 });
 
@@ -126,6 +126,5 @@ window.addEventListener('message', (event) => {
     scanStatus.classList.add('show');
     scanStatus.style.color = 'white';
     scanStatus.innerHTML = '⏳ Scanning in progress...';
-  }  
-
+  }
 });

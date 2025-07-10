@@ -2,6 +2,6 @@ export interface Pattern {
   id: string;
   description: string;
   criticality: string;
-  pattern: RegExp | string;
+  pattern: string; // for example  subprocess-injection 
   lang: string;
 }

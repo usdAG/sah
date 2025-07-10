@@ -67,6 +67,22 @@
 				"title": "SAH: Unexclude Folder"
 			},
 			{
+				"command": "fileExplorer.excludeFileNode",
+				"title": "SAH: Exclude File"
+			},
+			{
+				"command": "fileExplorer.excludeFolderNode",
+				"title": "SAH: Exclude Folder"
+			},
+			{
+				"command": "fileExplorer.unexcludeFileNode",
+				"title": "SAH: Unexclude File"
+			},
+			{
+				"command": "fileExplorer.unexcludeFolderNode",
+				"title": "SAH: Unexclude Folder"
+			},
+			{
 				"command": "fileExplorer.showMatchesForFolder",
 				"title": "SAH: Only show Matches in this path"
 			},
@@ -144,22 +160,22 @@
 			],
 			"view/item/context": [
 				{
-					"command": "fileExplorer.excludeFile",
+					"command": "fileExplorer.excludeFileNode",
 					"when": "view == fileExplorer",
 					"group": "navigation"
 				},
 				{
-					"command": "fileExplorer.unexcludeFile",
+					"command": "fileExplorer.unexcludeFileNode",
 					"when": "view == fileExplorer",
 					"group": "navigation"
 				},
 				{
-					"command": "fileExplorer.excludeFolder",
+					"command": "fileExplorer.excludeFolderNode",
 					"when": "view == fileExplorer",
 					"group": "navigation"
 				},
 				{
-					"command": "fileExplorer.unexcludeFolder",
+					"command": "fileExplorer.unexcludeFolderNode",
 					"when": "view == fileExplorer",
 					"group": "navigation"
 				}
