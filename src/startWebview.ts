@@ -9,11 +9,11 @@ const generateStartWebview = (webview: vscode.Webview, localPath: string) => {
 
   let ASCIIheader = '<pre>';
 ASCIIheader += ' _____  ___   _   _ <br>';
-ASCIIheader += '/  ___|/ _ \ | | | |<br>';
-ASCIIheader += '\ `--./ /_\ \| |_| |<br>';
-ASCIIheader += ' `--. \  _  ||  _  |<br>';
-ASCIIheader += '/\__/ / | | || | | |<br>';
-ASCIIheader += '\____/\_| |_/\_| |_/<br>';
+ASCIIheader += '/  ___|/ _ \\ | | | |<br>';
+ASCIIheader += '\\ `--./ /_\\ \\| |_| |<br>';
+ASCIIheader += ' `--. \\  _  ||  _  |<br>';
+ASCIIheader += '/\\__/ / | | || | | |<br>';
+ASCIIheader += '\\____/\\_| |_/\\_| |_/<br>';
 
   return `
 <!DOCTYPE html>

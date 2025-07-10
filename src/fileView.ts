@@ -181,9 +181,8 @@ export class FileExplorerProvider implements vscode.TreeDataProvider<FileNode> {
     const chain = new Set<string>();
     let current = path.resolve(target);
     const root = path.resolve(this.workspaceRoot);
-    while (true) {
-      chain.add(current);
-      if (current === root) break;
+    while (current !== root) {
+      chain.add(current);      
       const parent = path.dirname(current);
       if (parent === current) break; // safeguard against infinite loop.
       current = parent;

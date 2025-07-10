@@ -10,12 +10,14 @@ const sanitizeContent = (string: string) => {
     });
 }
 
+// global vars for filters 
 let selectedStatus = "unprocessed"
 let selectedCriticality = "0";
 let selectedRule = "all";
 export let excludedPath: string[] = [];
 
-
+// 3 functions to apply the filters 
+// --> update from right to left if something changes
 export const setStatus = (newStatus: string, panel: vscode.WebviewPanel) => {
   selectedStatus = newStatus;
   selectedCriticality = "0";
@@ -61,7 +63,6 @@ export const setExcludedPath = (newExcludedPaths: string[]) => {
 };
  
 
-
 function generateRuleSelection(rules: Array<Match>) {
   logger.debug("start generateRuleSelection")
   const _rules = Array.from(new Set(rules.map((m) => m.pattern.pattern))).sort();
@@ -72,20 +73,15 @@ function generateRuleSelection(rules: Array<Match>) {
   `;
 }
 
-const generateMatchesWebview = (
-  matches: Array<Match>, webview: vscode.Webview, localPath: string, currentPage = 1, pageSize = 20
-) => {
-  let matchesString: string = '';
-  // create a copy of matches for later use - CategorySelection with all matches
-  let _matches = [...matches];
-  logger.debug(`filter: ${selectedStatus}|${selectedCriticality}|${selectedRule}|`)
-
-  // Filter for Status
-  if (selectedStatus !== "all") {
+function applyStatusFilter(matches: Match[]){
+   if (selectedStatus !== "all") {
     logger.debug('Status filter with: ', selectedStatus)
-    _matches = _matches.filter((m) => m.status == selectedStatus);    
+    matches = matches.filter((m) => m.status == selectedStatus);    
   }
-  //logger.debug("Matches for webview generation (after status)",_matches)
+  return matches
+}
+
+function applyCriticalityFilter(_matches: Match[]){
 
   // Filter for Criticality 
   const criticalityRank = {
@@ -122,23 +118,49 @@ const generateMatchesWebview = (
     _matches = _matches.filter(m => m.pattern.criticality === selectedLabel);
     
   }
-  //logger.debug("Matches for webview generation (after criticality)",_matches)
+  return _matches
+}
 
-  const ruleSelectionHTML = generateRuleSelection(_matches)
+function applyRuleFilter(_matches: Match[]){
   // Filter for Rule
   if (selectedRule !== "all") {
     logger.debug('Rule filter with', selectedRule); 
     _matches = _matches.filter((m) => m.pattern.pattern == selectedRule);    
   }
-  // Filter for Excluded from FileView
+  return _matches
+}
+
+function applyExlusionFilter(_matches: Match[]){
   if (excludedPath.length > 0) {
     logger.debug("Filter for Excluded from FileView")
     _matches = _matches.filter((m) => !excludedPath.includes(m.path));
   } else {
     logger.debug("Not Filtering for Excluded from FileView (excludedPath <= 0)")
   }
+  return _matches
+}
 
-  logger.debug("Generationg HTML with matches")
+const generateMatchesWebview = (
+  matches: Array<Match>, webview: vscode.Webview, localPath: string, currentPage = 1, pageSize = 20
+) => {
+  let matchesString: string = '';
+  // create a copy of matches for later use - CategorySelection with all matches
+  let _matches = [...matches];
+  logger.debug(`filter: ${selectedStatus}|${selectedCriticality}|${selectedRule}|`)
+
+
+  /*
+  Filter for Status, Criticality, Rule and Exclusion from the FileView
+  */
+  
+  _matches = applyStatusFilter(_matches)  
+  _matches = applyCriticalityFilter(_matches)
+  const ruleSelectionHTML = generateRuleSelection(_matches)
+  _matches = applyRuleFilter(_matches)  
+  _matches = applyExlusionFilter(_matches)
+
+  logger.debug("Generating HTML with matches")
+
   const totalMatches = _matches.length;
   const totalPages = Math.ceil(totalMatches / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
@@ -147,11 +169,10 @@ const generateMatchesWebview = (
   // Get only the matches for the current page
   const paginatedMatches = _matches.slice(startIndex, endIndex);
   logger.debug(`Rendering page ${currentPage}/${totalPages} with ${ _matches.length} matches`);
+
   // loop over all _matches and append HTML for each one to matchesString
   paginatedMatches.forEach((m) => {
-
-    const parsedPattern = typeof m.pattern.pattern === 'string' ? new RegExp(m.pattern.pattern) : m.pattern.pattern;
-    const highlightedCodeLine = parsedPattern.exec(m.lineContent);
+    
     const relativePath = m.path.replace(vscode.workspace.rootPath !== undefined ? vscode.workspace.rootPath : '', '.');
 
     // modfication for the description 
@@ -162,90 +183,92 @@ const generateMatchesWebview = (
     ? fullDesc.slice(0, MAX_DESC_LEN) + '...'
     : fullDesc;
 
-    // need this to show after pagination that its still seletect to not get a visual bug
+    // need this to show after the pagination 
+    // so its still selected to not get a visual bug in which
+    // it is selected in the backend but not in the frontent xD
     const isToggled = toggledMatchIds.has(m.matchId);
 
     // construct HTML for single match
     matchesString += `
-    <div id="${m.matchId}" class="match-container">
-      <div class="match-input">
-       <input
-          type="checkbox"
-          title="Select"
-          id="checkbox${m.matchId}"
-          class="match-toggle"
-          ${isToggled ? 'checked' : ''}
-        />
-      </div>
+      <div id="${m.matchId}" class="match-container">
+        <div class="match-input">
+        <input
+            type="checkbox"
+            title="Select"
+            id="checkbox${m.matchId}"
+            class="match-toggle"
+            ${isToggled ? 'checked' : ''}
+          />
+        </div>
 
-      <div class="match-content">
-        <div>
-          <b>Match found in file </b>
-          <span class="file-highlight">${relativePath}</span>
-          <b>, line ${m.lineNumber}:</b>
-        </div>
-        <div class="icon-bar">
-          <div class="jump-to-code-btn"   data-match="${m.matchId}" title="Jump to code">&#8631;</div>
-          <div class="finding-btn"        data-match="${m.matchId}" title="Finding">&#8982;</div>
-          <div class="falsePositive-btn"  data-match="${m.matchId}" title="False Positive">&#10006;</div>
-          <div class="saveForLater-btn"   data-match="${m.matchId}" title="Save for later">&#128427;</div>
-        </div>
-        <p>
-          <div class="code-line">
-            ${sanitizeContent(m.lineContent)
-              .replace(
-                highlightedCodeLine !== null ? highlightedCodeLine[0] : '',
-                (str) => `<span class="match-highlight">${str}</span>`
-              )}
+        <div class="match-content">
+          <div>
+            <b>Match found in file </b>
+            <span class="file-highlight">${relativePath}</span>
+            <b>, line ${m.lineNumber}:</b>
           </div>
-        </p>
-        <table class="match-meta">
-          <tr>
-            <td>Type:</td>
-            <td>${m.pattern.id}</td>
-          </tr>
-          <tr>
-            <td>Description:</td>
-            <td class="desc-cell">
-              <span class="desc-text">${truncatedDesc}</span>
-              ${
-                fullDesc.length > MAX_DESC_LEN
-                  ? `<button
-                      class="desc-toggle-btn"
-                      data-fulldesc="${fullDesc.replace(/"/g, '&quot;')}"
-                      data-truncdesc="${truncatedDesc.replace(/"/g, '&quot;')}"
-                    >Show more</button>`
-                  : ''
-              }
-            </td>
-          </tr>
-          <tr>
-            <td>Criticality:</td>
-            <td>${m.pattern.criticality}</td>
-          </tr>
-          <tr>
-            <td>Status:</td>
-            <td>${m.status}</td>
-          </tr>
-          <tr>
-            <td>Comment:</td>
-            <td>
-              <input
-                type="text"
-                class="comment-input"
-                data-match="${m.matchId}"
-                placeholder="No comment yet..."
-                title="${m.comment || 'No comment yet...'}"
-                value="${m.comment || ''}"
-              />
-            </td>
-          </tr>
-        </table>
+          <div class="icon-bar">
+            <div class="jump-to-code-btn"   data-match="${m.matchId}" title="Jump to code">&#8631;</div>
+            <div class="finding-btn"        data-match="${m.matchId}" title="Finding">&#8982;</div>
+            <div class="falsePositive-btn"  data-match="${m.matchId}" title="False Positive">&#10006;</div>
+            <div class="saveForLater-btn"   data-match="${m.matchId}" title="Save for later">&#128427;</div>
+          </div>
+          <p>
+            <div class="code-line">
+              ${sanitizeContent(m.lineContent)
+                .replace(
+                  m.pattern.pattern,
+                  (str) => `<span class="match-highlight">${str}</span>`
+                )}
+            </div>
+          </p>
+          <table class="match-meta">
+            <tr>
+              <td>Type:</td>
+              <td>${m.pattern.id}</td>
+            </tr>
+            <tr>
+              <td>Description:</td>
+              <td class="desc-cell">
+                <span class="desc-text">${truncatedDesc}</span>
+                ${
+                  fullDesc.length > MAX_DESC_LEN
+                    ? `<button
+                        class="desc-toggle-btn"
+                        data-fulldesc="${fullDesc.replace(/"/g, '&quot;')}"
+                        data-truncdesc="${truncatedDesc.replace(/"/g, '&quot;')}"
+                      >Show more</button>`
+                    : ''
+                }
+              </td>
+            </tr>
+            <tr>
+              <td>Criticality:</td>
+              <td>${m.pattern.criticality}</td>
+            </tr>
+            <tr>
+              <td>Status:</td>
+              <td>${m.status}</td>
+            </tr>
+            <tr>
+              <td>Comment:</td>
+              <td>
+                <input
+                  type="text"
+                  class="comment-input"
+                  data-match="${m.matchId}"
+                  placeholder="No comment yet..."
+                  title="${m.comment || 'No comment yet...'}"
+                  value="${m.comment || ''}"
+                />
+              </td>
+            </tr>
+          </table>
+        </div>
       </div>
-    </div>
-`;
-
+    `;
   });
+
   logger.debug("Fininshed creating HTML with Matches")
   // get path to stylesheet
   const stylesheetPath = vscode.Uri.file(
