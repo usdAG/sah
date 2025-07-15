@@ -3,6 +3,7 @@
 	"displayName": "Static Analysis Hero",
 	"publisher": "usdAG",
 	"description": "Bringing code-reviews to the next level",
+	"icon": "src/media/logo.png",
 	"version": "2.0.1",
 	"engines": {
 		"vscode": "^1.40.0"
