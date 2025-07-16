@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import * as vscode from 'vscode';
 import * as path from 'path';
 import generateMatchesWebview, {
