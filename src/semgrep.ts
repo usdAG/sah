@@ -95,7 +95,7 @@ export async function handleOutputPathSelection(config: string, panel: vscode.We
    logger.debug("SelectedPath updated:",selectedPath)
   panel.webview.postMessage({
       command: "outputPathBtnResponse",
-      path: selectedPath,
+      path: selectedPath
     });
 }
 
@@ -138,6 +138,7 @@ export async function handlePathSelection(
   panel.webview.postMessage({
     command: `${command}Response`,
     path: fileUri[0].fsPath,
+    isFolder: isFolder
   });
 }
 

@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 // eslint-disable-next-line no-undef
 const vscode = acquireVsCodeApi();
 const jumpToCodeBtns    = Array.from(document.getElementsByClassName('jump-to-code-btn'));

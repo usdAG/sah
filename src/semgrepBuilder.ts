@@ -36,7 +36,7 @@ export function generateSemgrepOutputFilename(config: string, output?: string): 
 
   const defaultFilename = `${formattedDate}_semgrep_${defaultNameFragment(config)}.json`;
 
-  // if no output ise set return the default 
+  // if no output is set return the default 
   if (!output || output.trim() === "") {
     return defaultFilename;
   }
@@ -67,15 +67,14 @@ export function buildSemgrepCommand(semgrepPath: string, config: string): string
   */
   const configs: string[] = [];
 
-  for (let c of config.split(',')) {
-    c = c.trim();
+  for (const c of config.split(',')) {
 
     // check for filesystem existence (files or directories)
     if (fs.existsSync(c) && fs.statSync(c).isFile()) {
-      configs.push(`--config "${c}"`);
+      configs.push(`--config '${c}'`);
     } else if (fs.existsSync(c) && fs.statSync(c).isDirectory()) {
       for (const file of findAllFiles(c)) {
-        configs.push(`--config "${file}"`);
+        configs.push(`--config '${file}'`);
       }
     }
     // check for URL, registry id, or fallback
