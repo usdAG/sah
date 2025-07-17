@@ -18,9 +18,9 @@ export const saveProject = () => {
       matches: allMatchesParsed
     };
     fs.writeFileSync(currentProject, JSON.stringify(finalJSON, null, 2));
-    vscode.window.showInformationMessage("Project Saved")
+    // vscode.window.showInformationMessage("Project Saved")
   } else {
-    vscode.window.showInformationMessage("No project state found! Create a project first!")
+    displayNoProjectWarning()
   }
 };
 
@@ -68,6 +68,15 @@ export const loadProject = (callback: Function) => {
 export const displayNoProjectWarning = () => {
   if (!currentProject) {
     const warningMsg = 'No project selected! Your changes will not be saved. Please create a new project or load an existing one in order to save your changes.';
-    vscode.window.showWarningMessage(warningMsg, 'OK');
+    vscode.window.showWarningMessage(
+      warningMsg,
+      'Create New Project',
+      'OK'
+    ).then(selection => {
+       if (selection === 'Create New Project') {
+        // set a callback
+        newProject(() => {});
+      }
+    });
   }
 };

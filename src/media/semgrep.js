@@ -112,8 +112,8 @@ window.addEventListener('message', (event) => {
   }
   if (message.command === 'scanComplete') {
     scanStatus.style.color = 'green';
-    scanStatus.innerHTML = '✅ Scan completed!';
-  }  
+    scanStatus.innerHTML = `✅ Scan completed! Found ${message.matchesCount} Matches`;
+  }
   if (message.command === 'scanFailed') {
     scanStatus.style.color = 'red';
     scanStatus.innerHTML = `❌ ${message.errorMessage}`;

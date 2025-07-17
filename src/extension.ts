@@ -16,12 +16,14 @@ import {
 import generateStartWebview from './startWebview';
 import generateSemgrepWebview from './semgrepWebview';
 import {
-  isRelative,  handlePathSelection, handleOutputPathSelection
+  isRelative,  handlePathSelection, handleOutputPathSelection,
+  jsonData
 } from './semgrep';
 import { FileExplorerProvider, FileNode } from './fileView';
 import { logger } from './logging';
 import { startSemgrepScan } from './semgrepRunner';
 import { finalImportSemgrepJson, startImportSemgrepJson } from './semgrepImporter';
+import generateTestSectionWebview from './testSection';
 
 // Activate the extension.
 export const activate = (context: vscode.ExtensionContext) => {
@@ -133,7 +135,7 @@ export const activate = (context: vscode.ExtensionContext) => {
       // Log the size of the HTML content
       logger.debug(`Generated HTML size: ${htmlContent.length} characters`);
       logger.debug(`Approximate memory usage: ${(Buffer.byteLength(htmlContent, 'utf8') / 1024 / 1024).toFixed(2)} MB`);
-
+      saveProject()
       activePanel().webview.html = htmlContent;
     }),
     vscode.commands.registerCommand("extension.saveProject", () => saveProject()),
@@ -148,6 +150,11 @@ export const activate = (context: vscode.ExtensionContext) => {
       vscode.commands.executeCommand("markdown.showPreview", vscode.Uri.file(readmePath));
     })
   )
+
+  // Test Section
+  vscode.commands.registerCommand("extension.openRuleTester", () => {
+    activePanel().webview.html = generateTestSectionWebview(activePanel().webview, localPath);
+  })
 
   const activePanel = () => {
     if (active) {
@@ -200,6 +207,7 @@ export const activate = (context: vscode.ExtensionContext) => {
       getToggledMatches          : hGetToggledMatches,
       batchAction                : hBatchAction,
       clearAllSelcted            : hClearAllSelected,
+      createSplitView            : hCreateSplitView,
     };
 
     const post            = (msg: any) => panel.webview.postMessage(msg);
@@ -259,8 +267,8 @@ export const activate = (context: vscode.ExtensionContext) => {
     async function hStartSemgrepScan(message: any) {
       displayNoProjectWarning();
       try {
-        await startSemgrepScan(message.config, message.output, message.include, message.exclude, panel);
-        post({ command: 'scanComplete' });
+        await startSemgrepScan(message.config, message.output, message.include, message.exclude, panel, message.isTest);
+        post({ command: 'scanComplete', matchesCount: jsonData.data.results.length });
       } catch (e: any) {
         post({ command: 'scanFailed', errorMessage: e?.message ?? 'Unknown error' });
       }
@@ -299,6 +307,21 @@ export const activate = (context: vscode.ExtensionContext) => {
     }
     function hClearAllSelected(){
       clearAllToggledMatches();
+    }
+    async function hCreateSplitView(message: any){
+      const document = await vscode.workspace.openTextDocument(vscode.Uri.file(message.filePath));
+      await vscode.window.showTextDocument(document, {
+        viewColumn : vscode.ViewColumn.One,   // always left-most column
+        preview    : false                    // keep it open even after losing focus
+      });
+
+      /* 2. reveal (or move) the web-view to the right --------------------------- */
+      //
+      // When you pass `ViewColumn.Beside`, VS Code always shows the view in a column
+      // next to the *currently active* editor.  Because we just focused the file
+      // above, the active editor is in column 1 – so "beside" means column 2.
+      //
+      panel.reveal(vscode.ViewColumn.Beside);
     }
 
     // listen for messages from the webview
