@@ -3,7 +3,7 @@ import * as path from 'path';
 import { Match, toggledMatchIds } from './matches';
 import { logger } from './logging';
 
-const sanitizeContent = (string: string) => {
+export const sanitizeContent = (string: string) => {
   return string
     .replace(/./g, (s) => {
       return (s.match(/[a-z0-9\s]+/i)) ? s : "&#" + s.charCodeAt(0) + ";";

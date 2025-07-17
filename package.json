@@ -139,9 +139,10 @@
 				"command": "extension.showHelp",
 				"title": "SAH: Show Help"
 			},      
+
       {
-				"command": "extension.openRuleTester",
-				"title": "SAH: Open Semgrep Rule Tester"
+				"command": "extension.showMatchesTestSection",
+				"title": "SAH: Open Show Matches for Test Section"
 			}
 		],
 		"keybindings": [],

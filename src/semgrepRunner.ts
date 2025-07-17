@@ -7,6 +7,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { finalImportSemgrepJson } from "./semgrepImporter";
 import { buildSemgrepCommand, generateSemgrepOutputFilename } from "./semgrepBuilder";
+import { resetMatchValuesTestSection } from "./testSectionMatchesWebview";
+
 
 interface SemgrepErrorSpan {
   file: string;
@@ -36,7 +38,11 @@ export async function startSemgrepScan(
   isTest: boolean
 ): Promise<void> {
 
-
+  // reset the testsection matches and reload window to celan up
+  if(isTest){
+    resetMatchValuesTestSection()
+    vscode.commands.executeCommand('extension.showMatchesTestSection');
+  }
   const cleanup = () => {
     if (isTest) {
       if (!path.isAbsolute(outputFile)){
@@ -269,10 +275,11 @@ export async function startSemgrepScan(
       }
 
       if (isTest) {
+          finalImportSemgrepJson(isTest);
           cleanup()
           logger.debug("Result ammount after scan", jsonData.data.results.length)         
       } else if (!hasFailed && isFinished && jsonData.data.results.length >0) {
-        finalImportSemgrepJson();
+        finalImportSemgrepJson(isTest);
       }
       resolve()
     });

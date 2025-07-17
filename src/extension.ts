@@ -23,7 +23,7 @@ import { FileExplorerProvider, FileNode } from './fileView';
 import { logger } from './logging';
 import { startSemgrepScan } from './semgrepRunner';
 import { finalImportSemgrepJson, startImportSemgrepJson } from './semgrepImporter';
-import generateTestSectionWebview from './testSection';
+import { allMatchesTestSection, generateTestSectionMatchesWebview } from './testSectionMatchesWebview';
 
 // Activate the extension.
 export const activate = (context: vscode.ExtensionContext) => {
@@ -152,8 +152,16 @@ export const activate = (context: vscode.ExtensionContext) => {
   )
 
   // Test Section
-  vscode.commands.registerCommand("extension.openRuleTester", () => {
-    activePanel().webview.html = generateTestSectionWebview(activePanel().webview, localPath);
+
+  vscode.commands.registerCommand("extension.showMatchesTestSection", () => {
+    // set HTML content
+    const htmlContent = generateTestSectionMatchesWebview(allMatchesTestSection, activePanel().webview, localPath);
+
+    // Log the size of the HTML content
+    logger.debug(`Generated HTML size: ${htmlContent.length} characters`);
+    logger.debug(`Approximate memory usage: ${(Buffer.byteLength(htmlContent, 'utf8') / 1024 / 1024).toFixed(2)} MB`);
+    saveProject()
+    activePanel().webview.html = htmlContent;
   })
 
   const activePanel = () => {
@@ -202,6 +210,7 @@ export const activate = (context: vscode.ExtensionContext) => {
       showMessage                : hShowMessage,
       openFileViewer             : hOpenFileViewer,
       changePage                 : hChangePage,
+      changePageTestSection      : hChangePageTestSection,
       isFileExclusionSet         : hIsFileExclusionSet,
       toggleMatch                : hToggleMatch,
       getToggledMatches          : hGetToggledMatches,
@@ -275,7 +284,7 @@ export const activate = (context: vscode.ExtensionContext) => {
     }
     function hImportSemgrepScanResults(){
       displayNoProjectWarning();
-      finalImportSemgrepJson();
+      finalImportSemgrepJson(false);
     }
     async function hAddComment(message: any){
       await addComment(message.data, message.data_id);
@@ -315,13 +324,10 @@ export const activate = (context: vscode.ExtensionContext) => {
         preview    : false                    // keep it open even after losing focus
       });
 
-      /* 2. reveal (or move) the web-view to the right --------------------------- */
-      //
-      // When you pass `ViewColumn.Beside`, VS Code always shows the view in a column
-      // next to the *currently active* editor.  Because we just focused the file
-      // above, the active editor is in column 1 – so "beside" means column 2.
-      //
       panel.reveal(vscode.ViewColumn.Beside);
+    }
+    function hChangePageTestSection(message: any){
+      panel.webview.html = generateTestSectionMatchesWebview(allMatchesTestSection, panel.webview, localPath, message.page);
     }
 
     // listen for messages from the webview

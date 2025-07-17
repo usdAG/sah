@@ -7,6 +7,7 @@ import { addSemgrepMatch } from './matches';
 import { Pattern } from './patterns';
 import { saveProject } from './projects';
 import { jsonData } from './semgrep';
+import { addSemgrepMatchTestSection } from './testSectionMatchesWebview';
 export let importedMatches : number = 0;  
 
 
@@ -40,7 +41,7 @@ export async function startImportSemgrepJson(panel: vscode.WebviewPanel, file_pa
         }
         break
       }
-    finalImportSemgrepJson()
+    finalImportSemgrepJson(false)
     }
   } catch (error) {
       vscode.window.showErrorMessage(`An error occurred loading the scan (StartImportSemgrep): ${error}`);
@@ -48,7 +49,7 @@ export async function startImportSemgrepJson(panel: vscode.WebviewPanel, file_pa
 }
 
 // function to import the Semgrep after the Path has been validated
-export async function finalImportSemgrepJson(){
+export async function finalImportSemgrepJson(isTest: boolean){
   logger.debug("Starting to import semgrepJson")
   try{
     if (jsonData.data.results && Array.isArray(jsonData.data.results)) {
@@ -107,15 +108,20 @@ export async function finalImportSemgrepJson(){
             lang: "semgrep"
         };
 
-        addSemgrepMatch(startLine, proof, result.path, pattern);
-        importedMatches += 1;
+        if(isTest){
+          addSemgrepMatchTestSection(startLine, proof, result.path, pattern);
+        }else {
+          addSemgrepMatch(startLine, proof, result.path, pattern);
+          importedMatches += 1;
+        }
       };
     } else{
       vscode.window.showInformationMessage("The scan seems to be empty, no matches imported");
     }
-    saveProject();
-    vscode.window.showInformationMessage(`Imported ${importedMatches} semgrep matches.`)
-    vscode.commands.executeCommand('extension.showMatchesList');
+    if(!isTest) saveProject();
+    if(!isTest) vscode.window.showInformationMessage(`Imported ${importedMatches} semgrep matches.`)
+    if(!isTest) vscode.commands.executeCommand('extension.showMatchesList');
+    if (isTest) vscode.commands.executeCommand('extension.showMatchesTestSection');
   } catch (error) {
       vscode.window.showErrorMessage(`An error occurred loading the scan (finalImportSemgrep): ${error} `);
   }

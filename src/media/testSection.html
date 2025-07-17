@@ -3,8 +3,11 @@
 <head>
     <meta charset='UTF-8'>
     <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src {{cspSource}}; script-src {{cspSource}};">
-    <link rel="stylesheet" type="text/css" href={{stylesheetUri}} />
+    <link rel="stylesheet" type="text/css" href="{{testSectionCssUri}}" />
     
+     <!-- Matches list styles -->
+    <link rel="stylesheet" type="text/css" href="{{matchesCssUri}}" />
+
     <title>Semgrep Rule Tester</title>
   
 </head>
@@ -19,13 +22,14 @@
         Config(s) to include
         <span class="info-tooltip">
           <span class="info-icon" tabindex="0" aria-label="Help">&#x1F6C8;</span>
-          <span class="tooltip" id="configPathTooltip">
-            Choose one ore more Semgrep configurations to control which rules are run.
-            Comma seperate them, or set a path to the rules!<br>
-            You can also use the semgrep playgound to further create/test your Rules.
-            <a href="https://semgrep.dev/playground/" target="_blank">https://semgrep.dev/playground/</a>.
+            <span class="tooltip" id="configPathTooltip">
+              Choose one ore more Semgrep configurations to control which rules are run.
+              Comma seperate them, or set a path to the rules!<br>
+              You can also use the semgrep playgound to further create/test your Rules.
+              <a href="https://semgrep.dev/playground/" target="_blank">https://semgrep.dev/playground/</a>.
+            </span>
           </span>
-          </span><span class="label-colon">:</span>
+          <span class="label-colon">:</span>
         </span>
       </label>
       <div class="input-wrapper">
@@ -54,9 +58,21 @@
       </div>
       
       <button type="button" id="startSemgrepScan">Start Scan</button>
+    </div>  
+
+
+    <!-- Matches list with pagination -->
+    <h2>Matched Patterns:</h2>
+    {{paginationTop}}
+
+    <div id="matches">
+      {{matches}}
     </div>
-    
+
+    {{paginationBottom}}
+
   </div>
-  <script src={{scriptUri}}></script>
+  <!-- Scripts -->
+  <script src="{{testSectionJsUri}}"></script>
 </body>
 </html>

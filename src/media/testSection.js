@@ -1,6 +1,7 @@
 // eslint-disable-next-line no-undef
 const vscode = acquireVsCodeApi();
 
+let state = vscode.getState() || {};
 /*
 semgrep scan 
 */
@@ -12,6 +13,11 @@ const includePattern   = document.getElementById('includePattern');
 const scanStatus       = document.getElementById('scanStatus');
 
 
+if (state.config  !== undefined) configPath.value     = state.config;
+if (state.include !== undefined) includePattern.value = state.include;
+if (state.exclude !== undefined) excludePattern.value = state.exclude;
+
+
 configPathBtn.addEventListener('click', ()=>{
   vscode.postMessage({
     command: 'configPathBtn'
@@ -20,6 +26,11 @@ configPathBtn.addEventListener('click', ()=>{
 
 
 startSemgrepScan.addEventListener('click', () => {   
+  state.config = configPath.value
+  state.include = includePattern.value
+  state.exclude = excludePattern.value
+
+  vscode.setState(state);
   vscode.postMessage({
     command: 'startSemgrepScan',      
     config: configPath.value,
@@ -60,4 +71,33 @@ window.addEventListener('message', (event) => {
     scanStatus.style.color = 'white';
     scanStatus.innerHTML = '⏳ Scanning in progress...';
   }
+});
+
+
+// matches view
+
+document.querySelectorAll(".pagination button").forEach(button => {
+  button.addEventListener("click", () => {
+    const page = button.getAttribute("data-page");
+    vscode.postMessage({ command: "changePageTestSection", page: parseInt(page) });
+  });
+});
+
+// show more show less button in matches webview
+document.querySelectorAll('.desc-toggle-btn').forEach(btn => {
+  const cell = btn.closest('.desc-cell');
+  const textSpan = cell.querySelector('.desc-text');
+  const fullDesc = btn.dataset.fulldesc;
+  const truncDesc = btn.dataset.truncdesc;
+
+  btn.addEventListener('click', () => {
+    const expanded = cell.classList.toggle('expanded');
+    if (expanded) {
+      textSpan.textContent = fullDesc;
+      btn.textContent = 'Show less';
+    } else {
+      textSpan.textContent = truncDesc;
+      btn.textContent = 'Show more';
+    }
+  });
 });
