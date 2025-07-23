@@ -169,7 +169,16 @@ export async function startSemgrepScan(
       // just redirect stderr to stdout 
       // downside --> no live counter /time remaining
       // cmd >>>>> powershell
-      child = spawn(shell, ['/c', `${semgrepCommand} 2>&1`], {
+        
+
+      // workaround for unescaping :P
+
+      // https://stackoverflow.com/questions/43310947/replace-all-instances-of-character-in-string-in-typescript
+      semgrepCommand = semgrepCommand.split("'").join('');
+
+      logger.debug("SemgrepCOmmand", semgrepCommand)
+
+      child = spawn(shell, ['/c', semgrepCommand, ' 2>&1'], {
         stdio: ['ignore', 'pipe', 'pipe'],
         cwd: workspaceFolder // use the workspaceFolder Path as cwd to always get the correct relative file structure
       })
