@@ -11,7 +11,7 @@ const configPathBtn    = document.getElementById('configPathWizard');
 const excludePattern   = document.getElementById('excludePattern');
 const includePattern   = document.getElementById('includePattern');
 const scanStatus       = document.getElementById('scanStatus');
-
+const importMatchesBtn = document.getElementById('importMatches');
 
 if (state.config  !== undefined) configPath.value     = state.config;
 if (state.include !== undefined) includePattern.value = state.include;
@@ -100,4 +100,11 @@ document.querySelectorAll('.desc-toggle-btn').forEach(btn => {
       btn.textContent = 'Show more';
     }
   });
+});
+
+
+importMatchesBtn.addEventListener('click', () => {
+  vscode.postMessage({
+    command: 'importMatchesTestSection'
+  })
 });
