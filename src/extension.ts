@@ -217,6 +217,7 @@ export const activate = (context: vscode.ExtensionContext) => {
       batchAction                : hBatchAction,
       clearAllSelcted            : hClearAllSelected,
       createSplitView            : hCreateSplitView,
+      importMatchesTestSection   : hImportMatchesTestSection,
     };
 
     const post            = (msg: any) => panel.webview.postMessage(msg);
@@ -329,7 +330,16 @@ export const activate = (context: vscode.ExtensionContext) => {
     function hChangePageTestSection(message: any){
       panel.webview.html = generateTestSectionMatchesWebview(allMatchesTestSection, panel.webview, localPath, message.page);
     }
+    function hImportMatchesTestSection(){
+      if (typeof jsonData !== 'undefined' &&
+        Array.isArray(jsonData?.data?.results)) {
 
+      const isTest = false; // we want to import to "allMatches"
+      finalImportSemgrepJson(isTest);
+      return;
+    }
+      vscode.window.showInformationMessage("There is currently now data to import!");
+    }
     // listen for messages from the webview
     // this now calles the function based on the command set in the handlers
     panel.webview.onDidReceiveMessage(
@@ -337,7 +347,7 @@ export const activate = (context: vscode.ExtensionContext) => {
         log(message.command);
         const functionHandle = handlers[message.command];
         if (!functionHandle){
-          logger.warn('Unknown command', message.command);
+          logger.error('Unknown command', message.command);
           return;
         }
         try {
