@@ -34,9 +34,9 @@ To build this plugin, you need a recent version of nodejs and npm on your machin
 sudo apt install npm nodejs
 git clone git@github.com:usdAG/sah.git
 cd visual-source-code-plugin
-npm install
-npm install vsce
-node_modules/vsce/vsce package
+npm install --legacy-peer-deps
+npm install '@vscode/vsce' --legacy-peer-deps
+node_modules/@vscode/vsce/vsce package
 ```
 
 You can the install the resulting .vsix file in VSCode via the `Extensions: Install from VSIX...` command.

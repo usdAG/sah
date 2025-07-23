@@ -6,7 +6,7 @@
 	"icon": "src/media/logo.png",
 	"version": "2.0.1",
 	"engines": {
-		"vscode": "^1.40.0"
+		"vscode": "^1.102.0"
 	},
 	"categories": [
 		"Other"
@@ -138,9 +138,8 @@
 			{
 				"command": "extension.showHelp",
 				"title": "SAH: Show Help"
-			},      
-
-      {
+			},
+			{
 				"command": "extension.showMatchesTestSection",
 				"title": "SAH: Open Show Matches for Test Section"
 			}
