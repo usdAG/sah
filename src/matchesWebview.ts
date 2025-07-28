@@ -311,7 +311,7 @@ const generateMatchesWebview = (
     ${ruleSelectionHTML}
   </select>
   <button id="file-view">Show file Selection</button>
-  <button id="jmp-to-semgrep">Switch to Semgrep</button>
+  <button id="jmp-to-semgrep">Switch to Scan View</button>
   <div class="pagination">
     <span>Total Matches: ${totalMatches} | Page ${currentPage} of ${totalPages}</span>
     

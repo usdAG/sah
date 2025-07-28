@@ -27,7 +27,7 @@ ASCIIheader += '\\____/\\_| |_/\\_| |_/<br>';
 <body>
   <h3>${ASCIIheader}</h3><br>
   <h2>Welcome to SAH!</h2>
-  <p><i>To get started run a Semgrep scan with "SAH Semgrep""</i></p>
+  <p><i>To get started run a scan with "SAH: Scan Code""</i></p>
 </body>
 </html>`;
 };

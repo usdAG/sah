@@ -45,7 +45,7 @@
 			},
 			{
 				"command": "extension.importSemgrepScan",
-				"title": "SAH: Semgrep"
+				"title": "SAH: Scan Code"
 			},
 			{
 				"command": "fileExplorer.refresh",
@@ -141,11 +141,81 @@
 			},
 			{
 				"command": "extension.showMatchesTestSection",
-				"title": "SAH: Open Show Matches for Test Section"
+				"title": "SAH: Scanning Sandbox"
 			}
 		],
 		"keybindings": [],
 		"menus": {
+			"commandPalette": [
+				{
+					"command": "fileExplorer.showMatchesForFile",
+					"when": "false"
+				},
+				{
+					"command": "extension.deduplicateMatches",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.resetExclusionShortText",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.resetExclusion",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.showMatchesForFile",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.toggleVisible",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.toggleHidden",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.showMatchesForFolder",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.unexcludeFolderNode",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.unexcludeFileNode",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.excludeFolderNode",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.excludeFileNode",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.unexcludeFolder",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.unexcludeFile",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.excludeFolder",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.excludeFile",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.refresh",
+					"when": "false"
+				}
+			],
 			"view/title": [
 				{
 					"command": "fileExplorer.toggleHidden",
