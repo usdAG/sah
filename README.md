@@ -14,18 +14,19 @@ A match is a possible finding, based on a list of regular expressions or semgrep
 - [README](#readme)
   - [SAH - Static Analysis Hero](#sah---static-analysis-hero)
     - [Usage](#usage)
-      - [Install](#install)
+      - [Install/ Dev Setup](#install-dev-setup)
       - [Review Projects](#review-projects)
         - [New Project](#new-project)
         - [Load Project](#load-project)
       - [Scan For Potential Findings](#scan-for-potential-findings)
-        - [Semgrep Scan](#semgrep-scan)
+        - [Scan Code](#scan-code)
       - [Import semgrep Scan](#import-semgrep-scan)
+      - [Scanning Sandbox](#scanning-sandbox)
       - [Review Matches](#review-matches)
     - [Blacklist Files And Directories](#blacklist-files-and-directories)
     - [Command Palette](#command-palette)
 
-#### Install
+#### Install/ Dev Setup
 
 To build this plugin, you need a recent version of nodejs and npm on your machine.
 
@@ -45,30 +46,29 @@ You can the install the resulting .vsix file in VSCode via the `Extensions: Inst
 
 ##### New Project
 
-To start a review project open command palette and run `SAH New Project`.
+To start a review project open command palette and run `SAH: New Project`.
 Create a file that should be used as a project file.
 All actions will automatically be saved to this file.
 
 ##### Load Project
 
-To resume a previous project, or import a project file, run `SAH Load Project` from the command palette and select the respective project file.
+To resume a previous project, or import a project file, run `SAH: Load Project` from the command palette and select the respective project file.
 If there is no review project loaded, all actions are temporary only!
 
 #### Scan For Potential Findings
 
-To add a scan, you can either run a new *semgrep* scan or import an existing one into the TOL.
+To add a scan, you can either run a new *semgrep*/ *opengrep* scan or import an existing one into the TOL.
 
-##### Semgrep Scan
+##### Scan Code
 
-Call the `SAH Semgrep` dialog from the command palette.  
+Call the `SAH: Scan Code` dialog from the command palette.  
 The SAH allows you to start scans from within the plugin.
 
-This requires an install of semgrep on the local system.  
-Installation is recommended by using `pipx` -> `pipx install semgrep`  
+This requires an install of semgrep/ opengrep on the local system.  
+Installation is recommended by using `pipx` (e.g. for semgrep `pipx install semgrep`)
 
 The dialog lets you define the following parameters:
-- The path to scan (by default the working directory opened in the VSCode Workspace)
-- The config to use for the scan: This can either be an OS path to rules or a standard ruleset such as `p/owasp-top-ten` available in the [semgrep registry](https://semgrep.dev/r)
+- The config to use for the scan: This can either be an OS path pointing to custom rules or a standard ruleset such as `p/owasp-top-ten` available in the [semgrep registry](https://semgrep.dev/r)
 - The outpath writes the scan to a chosen location on disk for archival
 - Include Patterns/ Exclude Patterns tune the scanning engine of semgrep to include/ exclude resources for scanning
 
@@ -78,14 +78,20 @@ After the scan is finished results are automatically imported into the matches v
 
 #### Import semgrep Scan
 
-If you already have a semgrep scan you can import them also in `SAH semgrep`. An exemplary command to run a semgrep scan, importable by the SAH, is as follows: `semgrep scan -c "<ruleset>" --json -o <outputfile>`.
+If you already have a semgrep/opengrep scan you can import them also in `SAH: Scan Code`. An exemplary command to run a semgrep scan, importable by the SAH, is as follows: `semgrep scan -c "<ruleset>" --json -o <outputfile>`.
 Some important notices:
 - `--json` is required as the plugin can only parse the JSON output of semgrep
 - The SAH creates links from the findings to the affected files. In order for this to work it currently requires your semgrep scans to *NOT* include the full paths, but scan from the project/worksapce root. This can be achieved by scanning a path like `.` or removing the path entirely. Tip: If you already performed a scan and the paths don't match just edit the json file.
 
+#### Scanning Sandbox
+
+With the `SAH: Scanning Sandbox` command you can open the scanning sandbox. It allows you to quickly develop new rules in a running project and test their detection capabilities in your currently opened codebase. It allows you to specify a ruleset or a single rule - that will conveniently be opened in a separate tab inside VSCode for quick edits - to run against the current workspace. It directly integrates a view of alle matches found with this rule. 
+
+This way you can develop new rules or enhance existing ones. Once your satisfied with the results of your scans you can directly import them into the *Matches View* from here and continue investigating.
+
 #### Review Matches
 
-You can get an overview of all matches by using the `SAH Show Matches List` commmand. 
+You can get an overview of all matches by using the `SAH: Show Matches List` commmand. 
 
 It enables you to review and work through the list of issues. 
 You can also categorize them with the buttons on every match. This enables priorization of certain matches. 
@@ -102,11 +108,11 @@ In lieu of a `.semgrepignore` file, a default blacklist is used containing some 
 
 ### Command Palette
 
-- `SAH Add To Finding`: Open dialog to add a code snippet to a finding.
-- `SAH Load Project`: Open FS window to select and load a review project file.
-- `SAH Create New Finding`: Open dialog to create a new finding.
-- `SAH Scan Code`: Scan the currently opened workspace directory for potential findings.
-- `SAH New Project`: Open FS window to name a review project file and create a new review project.
-- `SAH Show Findingslist`: Switch to *Findings* view in the SAH panel.
-- `SAH Show Matcheslist`: Switch to *Matches* view in the SAH panel.
-- `SAH Semgrep`: Import a semgrep scan or perform a semgrep scan from within the SAH
+- `SAH: New Project`: Create a new project on disk to work with SAH and save your progress
+- `SAH: Load Project`: Open FS window to select and load a review project file.
+- `SAH: Save Project`: Manually save the current state to the project state
+- `SAH: Scan Code`: Scan the currently opened workspace directory for potential findings.
+- `SAH: Show Matches List`: Switch to *Matches* view in the SAH panel.
+- `SAH: Scanning Sandbox`: Allows you to easily test/ adjust rules on your current workspace and import resulting matches afterwards
+- `SAH: Show Help`: Renders this README inside VSCode for quick help
+- `SAH: Set Log Level to <LEVEL>`: Allows you to update the Loglevel for troubleshooting. Levels are: Off, Debug, Info, Warn, Error.
