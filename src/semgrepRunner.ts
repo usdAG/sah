@@ -70,7 +70,7 @@ export async function startSemgrepScan(
     } else {
       placeholder = '/usr/local/bin/semgrep';
     }
-    // Ask the user to provide the path to the Semgrep binary
+    // Ask the user to provide the path to the scanner binary
     semgrepPath = await vscode.window.showInputBox({
       prompt: 'Semgrep is not accessible in the system PATH. Please provide the path to the Semgrep binary:',
       placeHolder: placeholder
@@ -164,16 +164,6 @@ export async function startSemgrepScan(
     hasFailed = false;
     let isFinished = false
     if (process.platform === 'win32') {
-      // we don't have the pty for windows :|      
-      // after hours trying to get the node-pty-win working i think this is the best way
-      // just redirect stderr to stdout 
-      // downside --> no live counter /time remaining
-      // cmd >>>>> powershell
-        
-
-      // workaround for unescaping :P
-
-      // https://stackoverflow.com/questions/43310947/replace-all-instances-of-character-in-string-in-typescript
       semgrepCommand = semgrepCommand.split("'").join('');
 
       logger.debug("SemgrepCOmmand", semgrepCommand)
@@ -202,8 +192,6 @@ export async function startSemgrepScan(
 
       if (hasFailed) return
       if (isFinished) return
-      // remove all Ansi chars
-      // https://stackoverflow.com/questions/25245716/remove-all-ansi-colors-styles-from-strings
 
 
       // eslint-disable-next-line no-control-regex
@@ -234,7 +222,6 @@ export async function startSemgrepScan(
       } else {        
         // check that its not "Loading rules form registry"
         // Unicode Braille Patterns  u2800-u28FF
-        // https://en.wikipedia.org/wiki/Braille_Patterns
         // also exclude other semgrep patterns
         // --> only get the error message
 
@@ -271,7 +258,6 @@ export async function startSemgrepScan(
       //reject(new Error(`Semgrep Error: ${error.message}`)); // Reject if there is an error
     });
 
-    // lifesaver :D --> way better then parsing the stdout stderr err and exit 
     child.on('close', async () => {
       await importJsonFromOutputPath(outputFile)
       try {
@@ -300,7 +286,7 @@ async function importJsonFromOutputPath(outputFile: string) {
   logger.debug("importJsonFromOutputPath")
 
   // this is needed because the user can set a outputPath
-  // outside of the project root :P
+  // outside of the project root
 
   if (!path.isAbsolute(outputFile)){
     outputFile = workspaceFolder + "/" + outputFile;

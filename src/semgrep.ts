@@ -7,7 +7,7 @@ import { logger } from './logging';
 import { getDefaultPath } from './projects';
 import { generateSemgrepOutputFilename } from './semgrepBuilder';
 
-// hack to set the value of an exportable?!
+// hack to set the value of an exportable
 export const jsonData = {
   data: undefined as any
 };
@@ -152,7 +152,6 @@ export async function handlePathSelection(
 export async function checkSemgrepPath(): Promise<string | undefined> {
   return new Promise((resolve) => {
     // windows - 'cmd.exe /c where semgrep' - unix 'which semgrep'
-    // Powershell doesnt return the output of where?!  
     let child;
     if (process.platform === 'win32') {
       child = spawn('cmd.exe', ['/c', 'where', 'semgrep'],{shell:true});
