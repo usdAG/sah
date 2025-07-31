@@ -46,7 +46,7 @@ export const activate = (context: vscode.ExtensionContext) => {
   // fileExplorerProvider is defined in fileView.ts
   vscode.window.registerTreeDataProvider("fileExplorer", fileExplorerProvider);
 
-  // push a lot of commands for the fileExplorer
+  // push commands for the fileExplorer
   context.subscriptions.push(
     vscode.commands.registerCommand("fileExplorer.refresh", () => fileExplorerProvider.refresh()),
     vscode.commands.registerCommand("fileExplorer.excludeFile", (uri: vscode.Uri) =>
@@ -97,7 +97,7 @@ export const activate = (context: vscode.ExtensionContext) => {
   );
   /* End Register Tree View */
 
-  /* Commands for Logging*/
+  /* Register commands for Logging*/
   context.subscriptions.push(
     vscode.commands.registerCommand('SAH.setLogLevelDebug', () => logger.setLogLevel('debug')),
     vscode.commands.registerCommand('SAH.setLogLevelInfo',  () => logger.setLogLevel('info')),

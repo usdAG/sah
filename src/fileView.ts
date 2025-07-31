@@ -29,11 +29,6 @@ export class FileExplorerProvider implements vscode.TreeDataProvider<FileNode> {
     this._onDidChangeTreeData.fire();    
   }
 
-  /*
-  https://stackoverflow.com/questions/65905635/how-to-add-toggle-menu-to-view-title-with-vscode-extension
-  This is a workaround to change the "title" of a button by creating two buttons and only showing
-  one based on a boolean value :D
-  */
   toggleExcluded(): void {
     this.showExcluded = !this.showExcluded;
     vscode.commands.executeCommand('setContext', 'fileExplorer:showExcluded', this.showExcluded);
@@ -136,7 +131,6 @@ export class FileExplorerProvider implements vscode.TreeDataProvider<FileNode> {
   // Restrict the view to only show the chain (folders) that lead to the target file
   // Get chain of paths from the workspace root to the target file
   // Exclude all nodes that are not in the chain
-  // Done :D
   showMatchesForFile(filePath: string) {
     logger.debug("showMatchesForFile:", filePath)
     const allNodes = this.getAllNodes(this.workspaceRoot);    
