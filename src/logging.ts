@@ -13,6 +13,7 @@ class Logger {
   public setLogLevel(level: 'debug' | 'info' | 'warn' | 'error' | 'off') {
     this.logLevel = level;
     vscode.window.showInformationMessage(`SAH log level set to ${level}.`);
+    this.log('INFO', `SAH log level set to ${level}.`, []);
   }
 
   debug(msg: string, ...args: any[]) {

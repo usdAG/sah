@@ -171,8 +171,8 @@ export const activate = (context: vscode.ExtensionContext) => {
 
     // initialize webview panel
     panel = vscode.window.createWebviewPanel(
-      'sah', // type of webview
-      'SAH', // title of panel
+      'sah',
+      'Static Analysis Hero (SAH)',
       vscode.ViewColumn.Beside,
       {
         enableScripts: true,
@@ -220,9 +220,9 @@ export const activate = (context: vscode.ExtensionContext) => {
       importMatchesTestSection   : hImportMatchesTestSection,
     };
 
-    const post            = (msg: any) => panel.webview.postMessage(msg);
-    const cmd             = (c: string) => vscode.commands.executeCommand(c);
-    const log             = (...a: any[]) => logger.debug('[msg]', ...a);
+    const post = (msg: any) => panel.webview.postMessage(msg);
+    const cmd = (c: string) => vscode.commands.executeCommand(c);
+    const log = (...a: any[]) => logger.debug('[msg]', ...a);
     const showMatchesList = () => cmd('extension.showMatchesList');
 
     function hJump(message:any){ 
@@ -338,7 +338,7 @@ export const activate = (context: vscode.ExtensionContext) => {
       finalImportSemgrepJson(isTest);
       return;
     }
-      vscode.window.showInformationMessage("There is currently now data to import!");
+      vscode.window.showInformationMessage("There is currently no data to import!");
     }
     // listen for messages from the webview
     // this now calles the function based on the command set in the handlers
