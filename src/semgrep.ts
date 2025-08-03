@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import { spawn } from 'child_process';
 import * as path from 'path';
 import { logger } from './logging';
+import { getDefaultPath } from './projects';
 import { generateSemgrepOutputFilename } from './semgrepBuilder';
 
 // hack to set the value of an exportable?!
@@ -51,10 +52,10 @@ export async function handleOutputPathSelection(config: string, panel: vscode.We
     isFolder = choice === 'Folder';    
   
   if (isFolder){
-    
     const options: vscode.OpenDialogOptions = {      
       canSelectFolders: true,
-      openLabel: "Select a folder to save the Semgrep output"
+      defaultUri: getDefaultPath(),
+      openLabel: "Select folder for semgrep output",
     };
 
     const fileUri = await vscode.window.showOpenDialog(options);
@@ -77,10 +78,11 @@ export async function handleOutputPathSelection(config: string, panel: vscode.We
   } else {
     const options: vscode.SaveDialogOptions = {
       filters: { 'JSON Files': ['json'], 'All Files': ['*'] },
-      saveLabel: "Select file for Semgrep output"
+      defaultUri: getDefaultPath(),
+      saveLabel: "Select file for semgrep output"
     };
 
-  const fileUri = await vscode.window.showSaveDialog(options);
+    const fileUri = await vscode.window.showSaveDialog(options);
 
     if (!fileUri) {
       vscode.window.showWarningMessage("No file was selected.");
@@ -91,12 +93,13 @@ export async function handleOutputPathSelection(config: string, panel: vscode.We
     logger.debug("SelectedPath:", selectedPath)
 
   }  
-   // Post the selected path to the webview
-   logger.debug("SelectedPath updated:",selectedPath)
+
+  // Post the selected path to the webview
+  logger.debug("SelectedPath updated:",selectedPath)
   panel.webview.postMessage({
       command: "outputPathBtnResponse",
       path: selectedPath
-    });
+  });
 }
 
 export async function handlePathSelection(
@@ -124,6 +127,7 @@ export async function handlePathSelection(
   const options = {
     canSelectFiles: type === 'file' || !isFolder,
     canSelectFolders: type === 'folder' || isFolder,
+    defaultUri: getDefaultPath(),
     openLabel: label
   };
 
