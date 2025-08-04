@@ -20,8 +20,6 @@ export let excludedPath: string[] = [];
 // --> update from right to left if something changes
 export const setStatus = (newStatus: string, panel: vscode.WebviewPanel) => {
   selectedStatus = newStatus;
-  selectedCriticality = "0";
-  selectedRule = "all"
   panel.webview.postMessage({
     command: 'updateState',
     newState: {
@@ -35,7 +33,6 @@ export const setStatus = (newStatus: string, panel: vscode.WebviewPanel) => {
 
 export const setCriticality = (newCriticality: string, panel: vscode.WebviewPanel) => {
   selectedCriticality = newCriticality;
-  selectedRule = "all"
   panel.webview.postMessage({
     command: 'updateState',
     newState: {
