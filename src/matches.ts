@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { Pattern } from './patterns';
 import { logger } from './logging';
+import { fileExplorerProvider } from './extension';
 
 export interface Match {
   pattern: Pattern;
@@ -128,9 +129,24 @@ export const resetMatchValues = () => {
   matchIdCounter = 0;
 };
 
+export function buildFindingsMap(matches: Match[]): Map<string, number> {
+  const findingsMap = new Map<string, number>();
+  const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? "";
+
+  for (const match of matches) {
+    const absolutePath = path.resolve(workspaceRoot, match.path);
+    const count = findingsMap.get(absolutePath) ?? 0;
+    findingsMap.set(absolutePath, count + 1);
+  }
+
+  return findingsMap;
+}
 
 export const updateAllMatches = (allMatchesNew: Array<Match>) => {
   allMatches = allMatchesNew;
+  // Update the FileExplorer to show finding count
+  fileExplorerProvider.findingsMap = buildFindingsMap(allMatches);
+  fileExplorerProvider.refresh();
 };
 
 export const addSemgrepMatch = (startLine: number, proof: string, path: string, pattern: Pattern) => {
