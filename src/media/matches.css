@@ -111,6 +111,18 @@ button:hover {
   padding-top: 0.5em;
 }
 
+.no-match-container {
+  margin: 0;
+  background-color: var(--vscode-editorWidget-background);
+  border: 1px solid var(--vscode-editorWidget-border);
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  color: var(--vscode-editor-foreground);
+  overflow: hidden;
+  padding: 1em 2em;
+  font-size: large;
+}
+
 /* hide the real checkbox*/
 .match-toggle {
   cursor: pointer;

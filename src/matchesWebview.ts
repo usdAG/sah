@@ -161,6 +161,15 @@ const generateMatchesWebview = (
   const paginatedMatches = _matches.slice(startIndex, endIndex);
   logger.debug(`Rendering page ${currentPage}/${totalPages} with ${ _matches.length} matches`);
 
+  if (totalMatches == 0) {
+    matchesString += `
+      <div class="no-match-container">
+        <p><strong>There are no matches!</strong><br></p>
+        <p>Please adjust filters, scan code or load project.</p>
+      </div>
+    `
+  }
+
   // loop over all _matches and append HTML for each one to matchesString
   paginatedMatches.forEach((m) => {
     
