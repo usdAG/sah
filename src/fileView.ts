@@ -19,6 +19,8 @@ export class FileExplorerProvider implements vscode.TreeDataProvider<FileNode> {
   // when false, hide excluded nodes
   private showExcluded: boolean = false;
 
+  public findingsMap = new Map<string, number>();
+
   constructor(private workspaceRoot: string) {}
 
   public getExcludedPaths(): Set<string> {
@@ -36,11 +38,15 @@ export class FileExplorerProvider implements vscode.TreeDataProvider<FileNode> {
   }
 
   getTreeItem(element: FileNode): vscode.TreeItem {
+    const findings = this.findingsMap.get(element.filePath) ?? 0;
+    // logger.debug(`FilePath: ${element.filePath}, findings: ${findings}`);
+
     if (this.excludedPaths.has(element.filePath)) {
       element.description = " (excluded)";
       element.contextValue = "excluded";
     } else {
-      element.description = "";
+      const findingsText = findings > 0 ? ` (${findings} finding${findings > 1 ? 's' : ''})` : '';
+      element.description = findingsText;
       element.contextValue = element.collapsibleState === vscode.TreeItemCollapsibleState.None
         ? "file"
         : "folder";

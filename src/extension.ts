@@ -25,14 +25,16 @@ import { startSemgrepScan } from './semgrepRunner';
 import { finalImportSemgrepJson, startImportSemgrepJson } from './semgrepImporter';
 import { allMatchesTestSection, generateTestSectionMatchesWebview } from './testSectionMatchesWebview';
 
+export let fileExplorerProvider: FileExplorerProvider;
+
 // Activate the extension.
 export const activate = (context: vscode.ExtensionContext) => {
   const localPath = context.extensionPath;
   logger.info('SAH extension activated!');
   let panel: vscode.WebviewPanel;
   let active = false;
-  const fileExplorerProvider = new FileExplorerProvider(vscode.workspace.rootPath || "");
-  
+  fileExplorerProvider = new FileExplorerProvider(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? "");
+
   /*
   Register a Tree View
   https://code.visualstudio.com/api/extension-guides/tree-view
