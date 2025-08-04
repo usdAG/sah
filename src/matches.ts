@@ -15,6 +15,24 @@ export interface Match {
   selected: boolean; // this is for the multiselect in the MatchesWebview
 }
 
+export const criticalityOptions = [
+  { value: '0', label: 'All Criticalities', icon: '' },
+  { value: '1', label: 'INFO', icon: '&#x1F535;' },
+  { value: '2', label: 'LOW', icon: '&#x1F7E1;' },
+  { value: '3', label: 'MEDIUM', icon: '&#x1F7E0;' },
+  { value: '4', label: 'HIGH', icon: '&#x1F534;' },
+  { value: '5', label: 'CRITICAL', icon: '&#x1F534;' },
+];
+
+export const statusOptions = [
+  { value: 'all', label: 'All Matches' },
+  { value: 'unprocessed', label: 'Unprocessed' },
+  { value: 'finding', label: 'Findings' },
+  { value: 'falsePositive', label: 'False Positive' },
+  { value: 'saveForLater', label: 'Saved for later' }
+];
+
+
 export let allMatches: Array<Match> = [];
 export const toggledMatchIds: Set<number> = new Set<number>();
 let matchIdCounter = 0;

@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { Match, toggledMatchIds } from './matches';
+import { Match, toggledMatchIds, criticalityOptions, statusOptions } from './matches';
 import { logger } from './logging';
 
 export const sanitizeContent = (string: string) => {
@@ -74,7 +74,7 @@ function generateRuleSelection(rules: Array<Match>) {
 }
 
 function applyStatusFilter(matches: Match[]){
-   if (selectedStatus !== "all") {
+  if (selectedStatus !== "all") {
     logger.debug('Status filter with: ', selectedStatus)
     matches = matches.filter((m) => m.status == selectedStatus);    
   }
@@ -82,53 +82,24 @@ function applyStatusFilter(matches: Match[]){
 }
 
 function applyCriticalityFilter(_matches: Match[]){
-
-  // Filter for Criticality 
-  const criticalityRank = {
-    INFO: 1,
-    LOW: 2,
-    MEDIUM: 3,
-    HIGH: 4,
-    CRITICAL: 5
-  };
-  logger.debug('Criticality filter with', selectedCriticality);    
-  // if selectedCriticality (6 7) sort them asc or desc
-  // typescript maaaagic
-  if (selectedCriticality === "6") {
-    // Ascending
-    _matches.sort((a, b) => 
-      criticalityRank[a.pattern.criticality as keyof typeof criticalityRank] - criticalityRank[b.pattern.criticality as keyof typeof criticalityRank]
-    );
-  } 
-  else if (selectedCriticality === "7") {
-    // Descending
-    _matches.sort((a, b) => 
-      criticalityRank[b.pattern.criticality as keyof typeof criticalityRank] - criticalityRank[a.pattern.criticality as keyof typeof criticalityRank]
-    );
-  } 
-  else if (selectedCriticality !== "0"){
-    // else filter _matches dependent on selected criticality
-    const selectedLabel = {
-      "1": "INFO",
-      "2": "LOW",
-      "3": "MEDIUM",
-      "4": "HIGH",
-      "5": "CRITICAL"
-    }[selectedCriticality];
+  if (selectedCriticality !== "0"){
+    const selectedLabel = criticalityOptions.find(option => option.value === selectedCriticality)?.label ?? "";
     _matches = _matches.filter(m => m.pattern.criticality === selectedLabel);
-    
   }
   return _matches
 }
 
-function getCriticalityLabel(selectedCriticality: string): string {
-  return {
-      "INFO": "&#x1F535;",
-      "LOW": "&#x1F7E1;",
-      "MEDIUM": "&#x1F7E0;",
-      "HIGH": "&#x1F534;",
-      "CRITICAL": "&#x1F534;"
-    }[selectedCriticality] ?? "";
+function getCriticalityIcon(selectedCriticalityLabel: string): string {
+  return criticalityOptions.find(option => option.label === selectedCriticalityLabel)?.icon ?? "";
+}
+
+function orderMatchesByCriticality(_matches: Match[]){
+  return _matches.sort((a, b) => {
+    const getRank = (label: string) =>
+    criticalityOptions.find(opt => opt.label === label)?.value ?? '0';
+
+    return parseInt(getRank(b.pattern.criticality)) - parseInt(getRank(a.pattern.criticality));
+  });
 }
 
 function applyRuleFilter(_matches: Match[]){
@@ -177,6 +148,7 @@ const generateMatchesWebview = (
   const ruleSelectionHTML = generateRuleSelection(_matches)
   _matches = applyRuleFilter(_matches)  
   _matches = applyExlusionFilter(_matches)
+  _matches = orderMatchesByCriticality(_matches)
 
   logger.debug("Generating HTML with matches")
 
@@ -223,7 +195,7 @@ const generateMatchesWebview = (
         <div class="match-content">
           <div>
             <b>
-              ${getCriticalityLabel(m.pattern.criticality)}
+              ${getCriticalityIcon(m.pattern.criticality)}
               Match #${m.matchId} found in file&nbsp;
             </b>
             <span class="file-highlight jump-to-code-btn" data-match="${m.matchId}">${relativePath}</span>
@@ -266,7 +238,7 @@ const generateMatchesWebview = (
             </tr>
             <tr>
               <td>Criticality:</td>
-              <td>${getCriticalityLabel(m.pattern.criticality)}&nbsp;${m.pattern.criticality}</td>
+              <td>${getCriticalityIcon(m.pattern.criticality)}&nbsp;${m.pattern.criticality}</td>
             </tr>
             <tr>
               <td>Status:</td>
@@ -323,14 +295,6 @@ const generateMatchesWebview = (
     </div>
   `
 
-  const statusOptions = [
-    { value: 'all', label: 'All Matches' },
-    { value: 'unprocessed', label: 'Unprocessed' },
-    { value: 'finding', label: 'Findings' },
-    { value: 'falsePositive', label: 'False Positive' },
-    { value: 'saveForLater', label: 'Saved for later' }
-  ];
-
   const statusSelectHtml = `
     <select id="status-selection">
       ${statusOptions.map(opt => `
@@ -340,17 +304,6 @@ const generateMatchesWebview = (
       `).join('')}
     </select>
   `;
-
-  const criticalityOptions = [
-    { value: '0', label: 'All Criticalities' },
-    { value: '1', label: 'INFO' },
-    { value: '2', label: 'LOW' },
-    { value: '3', label: 'MEDIUM' },
-    { value: '4', label: 'HIGH' },
-    { value: '5', label: 'CRITICAL' },
-    { value: '6', label: 'Ascending Order' },
-    { value: '7', label: 'Descending Order' }
-  ];
 
   const criticalitySelectHtml = `
     <select id="criticality-selection">
