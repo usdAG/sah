@@ -3,6 +3,7 @@ import * as path from 'path';
 import { Pattern } from './patterns';
 import { logger } from './logging';
 import { fileExplorerProvider } from './extension';
+import { saveProject } from './projects';
 
 export interface Match {
   pattern: Pattern;
@@ -175,6 +176,7 @@ export async function addComment(comment: string, matchId: number){
   } else {
     vscode.window.showErrorMessage(`Match with ID ${matchId} not found.`);
   }
+  saveProject();
 }
 
 export function deduplicateMatches(matches: Array<Match>): Array<Match> {
