@@ -18,7 +18,7 @@ const generateSemgrepWebview = (webview: vscode.Webview, localPath: string,
     path.join(localPath, 'src', 'media', 'semgrep.js'),
   );
   
-  const htmlHeader = getHtmlHeader(webview, localPath, 'Scan Code using semgrep / opengrep');
+  const htmlHeader = getHtmlHeader(webview, localPath, 'Scan Code using Semgrep / Import Scan Results');
   const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || "";
 
   const htmlPath = path.join(localPath, 'src', 'media', 'semgrep.html');
