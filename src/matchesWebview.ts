@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { Match, toggledMatchIds, criticalityOptions, statusOptions } from './matches';
 import { logger } from './logging';
+import { getHtmlHeader } from './webHelpers';
 
 export const sanitizeContent = (string: string) => {
   return string
@@ -280,13 +281,6 @@ const generateMatchesWebview = (
     path.join(localPath, 'src', 'media', 'matches.js'),
   );
 
-  const logoPath = vscode.Uri.file(
-    path.join(localPath, 'src', 'media', 'logo.png'),
-  );
-  logger.debug(logoPath.toString());
-  const logoUri = webview.asWebviewUri(logoPath);
-
-
   const paginationPanel = `
     <div class="pagination">
       <span>Total Matches: ${totalMatches} | Page ${currentPage} of ${totalPages}</span>
@@ -321,6 +315,8 @@ const generateMatchesWebview = (
     </select>
   `;
 
+  const htmlHeader = getHtmlHeader(webview, localPath, 'Matched Patterns / Rules');
+
   return `
 <!DOCTYPE html>
 <html lang="en">
@@ -328,11 +324,10 @@ const generateMatchesWebview = (
   <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src ${webview.cspSource}; img-src ${webview.cspSource};">
   <link rel="stylesheet" type="text/css" href=${webview.asWebviewUri(stylesheetPath)} />
-  <title>SAH Matches</title>
+  <title>Static Analysis Hero</title>
 <head>
 <body>
-  <img src="${logoUri}" />
-  <h2>Matched Patterns: </h2>
+  ${htmlHeader}
   ${statusSelectHtml}
   ${criticalitySelectHtml}
   <select id="rules-selection">

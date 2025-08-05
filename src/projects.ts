@@ -96,3 +96,7 @@ export function getDefaultPath(): vscode.Uri {
   const defaultFolder = path.dirname(currentProject) || os.homedir();
   return vscode.Uri.file(defaultFolder);
 }
+
+export function getCurrentProject(): string {
+  return currentProject ?? "";
+}
