@@ -92,7 +92,7 @@ export function buildSemgrepCommand(semgrepPath: string, config: string): string
   }
 
   const configArgs = configs.join(' ');
-  const semgrepCommand = `${semgrepPath} scan ${configArgs} --strict --json --metrics off`;
+  const semgrepCommand = `${semgrepPath} scan ${configArgs} --strict --json`;
   return semgrepCommand;
 }
 
