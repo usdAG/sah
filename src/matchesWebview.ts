@@ -231,7 +231,6 @@ const generateMatchesWebview = (
             <tr>
               <td>Description:</td>
               <td class="desc-cell">
-                <span class="desc-text">${truncatedDesc}</span>
                 ${
                   fullDesc.length > MAX_DESC_LEN
                     ? `<button
@@ -241,6 +240,7 @@ const generateMatchesWebview = (
                       >Show more</button>`
                     : ''
                 }
+                <span class="desc-text">${truncatedDesc}</span>
               </td>
             </tr>
             <tr>
