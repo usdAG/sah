@@ -13,7 +13,7 @@ import {
 import {
   newProject, loadProject, saveProject, displayNoProjectWarning,
 } from './projects';
-import generateStartWebview from './startWebview';
+// import generateStartWebview from './startWebview';
 import generateSemgrepWebview from './semgrepWebview';
 import {
   isRelative,  handlePathSelection, handleOutputPathSelection,
@@ -118,8 +118,8 @@ export const activate = (context: vscode.ExtensionContext) => {
     }),
     vscode.commands.registerCommand("extension.newProject", () => {
       const callback = () => {
-        // set HTML content
-        activePanel().webview.html = generateStartWebview(activePanel().webview, localPath);
+        //activePanel().webview.html = generateStartWebview(activePanel().webview, localPath);
+        activePanel().webview.html = generateSemgrepWebview(activePanel().webview, localPath);
       };
       newProject(callback);
     }),
