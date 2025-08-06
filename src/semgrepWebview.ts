@@ -1,9 +1,12 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
+import { logger } from './logging';
+import { getHtmlHeader } from './webHelpers';
+
 const generateSemgrepWebview = (webview: vscode.Webview, localPath: string,
 ) => {
-  console.debug("Start loading semgrepWebview")
+  logger.debug("Start loading semgrepWebview")
 
   // get path to stylesheet
   const stylesheetPath = vscode.Uri.file(
@@ -15,6 +18,7 @@ const generateSemgrepWebview = (webview: vscode.Webview, localPath: string,
     path.join(localPath, 'src', 'media', 'semgrep.js'),
   );
   
+  const htmlHeader = getHtmlHeader(webview, localPath, 'Scan Code using Semgrep / Import Scan Results');
   const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || "";
 
   const htmlPath = path.join(localPath, 'src', 'media', 'semgrep.html');
@@ -24,7 +28,8 @@ const generateSemgrepWebview = (webview: vscode.Webview, localPath: string,
   html = html.replace(/{{cspSource}}/g, webview.cspSource);
   html = html.replace(/{{stylesheetUri}}/g, webview.asWebviewUri(stylesheetPath).toString());
   html = html.replace(/{{scriptUri}}/g, webview.asWebviewUri(scriptPath).toString());
-  html = html.replace(/{{CWD}}/g,cwd)
+  html = html.replace(/{{CWD}}/g,cwd);
+  html = html.replace(/{{htmlheader}}/g,htmlHeader);
   return html;
 
 };

@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
 import { setExcludedPath } from "./matchesWebview";
-
+import { logger } from './logging';
 /*
 https://code.visualstudio.com/api/extension-guides/tree-view
 */
@@ -19,6 +19,8 @@ export class FileExplorerProvider implements vscode.TreeDataProvider<FileNode> {
   // when false, hide excluded nodes
   private showExcluded: boolean = false;
 
+  public findingsMap = new Map<string, number>();
+
   constructor(private workspaceRoot: string) {}
 
   public getExcludedPaths(): Set<string> {
@@ -29,11 +31,6 @@ export class FileExplorerProvider implements vscode.TreeDataProvider<FileNode> {
     this._onDidChangeTreeData.fire();    
   }
 
-  /*
-  https://stackoverflow.com/questions/65905635/how-to-add-toggle-menu-to-view-title-with-vscode-extension
-  This is a workaround to change the "title" of a button by creating two buttons and only showing
-  one based on a boolean value :D
-  */
   toggleExcluded(): void {
     this.showExcluded = !this.showExcluded;
     vscode.commands.executeCommand('setContext', 'fileExplorer:showExcluded', this.showExcluded);
@@ -41,11 +38,15 @@ export class FileExplorerProvider implements vscode.TreeDataProvider<FileNode> {
   }
 
   getTreeItem(element: FileNode): vscode.TreeItem {
+    const findings = this.findingsMap.get(element.filePath) ?? 0;
+    // logger.debug(`FilePath: ${element.filePath}, findings: ${findings}`);
+
     if (this.excludedPaths.has(element.filePath)) {
       element.description = " (excluded)";
       element.contextValue = "excluded";
     } else {
-      element.description = "";
+      const findingsText = findings > 0 ? ` (${findings} finding${findings > 1 ? 's' : ''})` : '';
+      element.description = findingsText;
       element.contextValue = element.collapsibleState === vscode.TreeItemCollapsibleState.None
         ? "file"
         : "folder";
@@ -95,53 +96,66 @@ export class FileExplorerProvider implements vscode.TreeDataProvider<FileNode> {
   // Helper to update the view and call showMatchesList (the Webview)
   private updateView(): void {
     this.refresh();
-    setExcludedPath(Array.from(this.excludedPaths));
+    // Convert all excludedPaths to relative paths before setting,
+    // because the excludedPaths are not matched agains relative Paths 
+    const relExcludedPaths = Array.from(this.excludedPaths).map(p =>
+      path.isAbsolute(p) ? path.relative(this.workspaceRoot, p) : p
+    );
+    logger.debug("updateView REL:", relExcludedPaths);
+    setExcludedPath(relExcludedPaths);
     vscode.commands.executeCommand('extension.showMatchesList');
   }
 
   // Mark a file/folder as excluded - if its a folder --> recursively exclude all its children
-  exclude(filePath: string) {
+  excludeFolder(filePath: string) {
     if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
       const allPaths = this.getAllNodes(filePath);
       allPaths.forEach(p => this.excludedPaths.add(p));
-    } else {
-      this.excludedPaths.add(filePath);
     }
     this.updateView();
   }
 
-
-  // Shows only matches in a defined subtree. Excludes all other paths.
-  onlyShowMatchesIn(filePath: string){
-    const allNodes = this.getAllNodes(this.workspaceRoot);
-    const subTree = new Set(this.getAllNodes(filePath));
-    this.excludedPaths = new Set(allNodes.filter(node => !subTree.has(node)));
+  excludeFile(filePath: string) {    
+    this.excludedPaths.add(filePath);    
     this.updateView();
   }
 
   // Remove a file/folder from the exclusion - if its a folder --> recursively unexclude all its children
-  unexclude(filePath: string) {
+  unexcludeFolder(filePath: string) {
     if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
       const allPaths = this.getAllNodes(filePath);
       allPaths.forEach(p => this.excludedPaths.delete(p));
-    } else {
-      this.excludedPaths.delete(filePath);
     }
     this.updateView();
   }
-  
+
+  unexcludeFile(filePath: string) {
+    this.excludedPaths.delete(filePath);    
+    this.updateView();
+  }
+
   // Restrict the view to only show the chain (folders) that lead to the target file
   // Get chain of paths from the workspace root to the target file
   // Exclude all nodes that are not in the chain
-  // Done :D
   showMatchesForFile(filePath: string) {
-    vscode.window.showInformationMessage(`Processing matches for: ${filePath}`);
+    logger.debug("showMatchesForFile:", filePath)
     const allNodes = this.getAllNodes(this.workspaceRoot);    
     const chainPaths = this.getChainPaths(filePath);    
     this.excludedPaths = new Set(allNodes.filter(node => !chainPaths.has(node)));
     this.updateView();
   }
 
+  // Shows only matches in a defined subtree. Excludes all other paths.
+  showMatchesForFolder(filePath: string){
+    logger.debug("showMatchesForFolder:", filePath)
+    const allNodes = this.getAllNodes(this.workspaceRoot);
+    const subTree = new Set(this.getAllNodes(filePath));
+    this.excludedPaths = new Set(allNodes.filter(node => !subTree.has(node)));
+    this.updateView();
+  }
+
+  
+  
   // Recursively get all file and folder paths from the given directory
   // Call reddirSync with withFileTypes to get an array
   // Append to nodes if its a directory call function recursive
@@ -161,15 +175,14 @@ export class FileExplorerProvider implements vscode.TreeDataProvider<FileNode> {
   }
 
   // Build a set of paths representing the chain from the workspace root to the target
-  // strip the dirname for the resolved path --> do this until you are the root
+  // strip the dirname for the resolved path --> do this until you are at the root
   // --> return chain
   private getChainPaths(target: string): Set<string> {
     const chain = new Set<string>();
     let current = path.resolve(target);
     const root = path.resolve(this.workspaceRoot);
-    while (true) {
-      chain.add(current);
-      if (current === root) break;
+    while (current !== root) {
+      chain.add(current);      
       const parent = path.dirname(current);
       if (parent === current) break; // safeguard against infinite loop.
       current = parent;
@@ -178,7 +191,7 @@ export class FileExplorerProvider implements vscode.TreeDataProvider<FileNode> {
   }
 
   resetExclusion(): void {
-    this.unexclude(this.workspaceRoot)
+    this.unexcludeFolder(this.workspaceRoot)
     this.updateView()
   }
 }

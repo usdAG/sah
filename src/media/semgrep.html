@@ -2,66 +2,87 @@
 <html lang='en'>
 <head>
     <meta charset='UTF-8'>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src {{cspSource}}; script-src {{cspSource}};">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src {{cspSource}}; script-src {{cspSource}}; img-src {{cspSource}};">
     <link rel="stylesheet" type="text/css" href={{stylesheetUri}} />
     
     <title>Semgrep Tool</title>
   
 </head>
 <body>
+  {{htmlheader}}
   <div class="container">    
     <form id="semgrepForm">
       <!-- Import Semgrep -->
       <div class="form-group">
-        <h3>Import Semgrep</h3>        
+        <h3>Import Semgrep / Opengrep</h3>
         <div class="input-wrapper">
           <button type="button" id="startImportSemgrep">Select Scan</button>
-          <input type="text" id="semgrepScanImportPath" placeholder="Enter the path to your Semgrep Scan">
-        </div>
-        
-        <button type="button" id="semgrepScanImportPathBtn">Import from Path</button> 
-        <label for="semgrepPath" id="semgrepPathLabel">This shows the first scanned file of the semgrep scan.
-         The path is NOT relative to the project root folder. SAH however needs the relative path.
-         Modify you Semgrep scan to only include relative paths or rescan with SAH! </label>
-        <input type="text" id="semgrepPath" placeholder="Enter the path to Semgrep files">
+          <input type="text" id="semgrepScanImportPath" placeholder="Path to Semgrep / Opengrep Scan Results in JSON-format">
+        </div>        
+        <button type="button" id="semgrepScanImportPathBtn">Import</button> 
+        <label for="semgrepPath" id="semgrepPathLabel">
+          Error: The paths in the scan results don't match the current workspace.<br><br>
+          This may be caused by running semgrep / opengrep in a subdirectory of the current workspace.
+          In order to process results, SAH requires all paths to be relative to the project root.
+          To ensure relative paths, run the scan from the project root <i>without</i> specifying an absolute path.<br>
+          <strong>Example:</strong> <code>semgrep scan --config p/python --json-output &lt;filename&gt;.json</code><br><br>
+          The following example shows the path of the first result in the provided JSON file:<br>
+        </label>
+        <input type="text" id="semgrepPath" placeholder="" disabled>
         <span id="pathStatus" style="margin-left: 10px;"></span>
-        <button type="button" id="finalImportSemgrep">Import</button>    
     </form>
 
     <!-- Start Semgrep Scan -->
     <div class="form-group">
       <h3>Start a Semgrep Scan</h3>
 
-       <!-- Scan Target -->
-      <label for="scanTarget">Target of the scan:</label>
-      <div class="input-wrapper">
-        <button type="button" id="scanTargetWizard" class="folder-btn">Select Folder/File</button>
-        <input type="text" id="scanTarget" value="{{CWD}}">
-      </div>
-
       <!-- Config Path -->
-      <label for="configPath">Config to include:</label>
+      <label for="configPath">
+        Config(s) to include
+        <span class="info-tooltip">
+          <span class="info-icon" tabindex="0" aria-label="Help">&#x1F6C8;</span>
+          <span class="tooltip" id="configPathTooltip">
+            Choose one ore more Semgrep configurations to control which rules are run.
+            Comma seperate them! <br>
+            You can use your own rules or select official rule packs from the Semgrep Registry.<br>
+            See examples and browse available configs at
+            <a href="https://semgrep.dev/r" target="_blank">semgrep.dev/r</a>.
+          </span>
+          </span><span class="label-colon">:</span>
+        </span>
+      </label>
       <div class="input-wrapper">
-        <button type="button" id="configPathWizard" class="folder-btn">Select File</button>
+        <button type="button" id="configPathWizard" class="folder-btn">Select File/Folder</button>
         <input type="text" id="configPath" value="auto">
       </div>
 
       <!-- Output Path -->
-      <label for="outputPath">Output destination (optional):</label>
+      <label for="outputPath">Output destination
+        <span class="info-tooltip">
+          <span class="info-icon" tabindex="0" aria-label="Help">&#x1F6C8;</span>
+          <span class="tooltip" id="configPathTooltip">
+            The output filename will be auto-generated if left blank or a folder is selected.<br>
+            It combines the current date, the word "semgrep", and the ruleset name (e.g., <code>20240612_semgrep_auto.json</code>).<br>
+            The file will be saved at the project root, making it easy to find and share with others.<br>
+            This can be especially helpful for large projects or long-running scans.
+          </span>
+          </span><span class="label-colon">:</span>
+        </span>
+      </label>
       <div class="input-wrapper">
-        <button type="button" id="outputPathWizard" class="folder-btn">Select Folder</button>  
+        <button type="button" id="outputPathWizard" class="folder-btn">Select File/Folder</button>  
         <input type="text" id="outputPath" placeholder="<Date in YYYYMMDD>_semgrep_<ruleset>.json">
       </div>
 
       <!-- Exclude Pattern -->
-      <label for="excludePattern">Exclude pattern(s):</label>
+      <label for="excludePattern">Exclude pattern(s) (optional):</label>
       <div class="input-wrapper">
         <input type="text" id="excludePattern" placeholder="e.g., *.py, tests" />
         <small>Add multiple patterns separated by commas</small>
       </div>
 
       <!-- Include Pattern -->
-      <label for="includePattern">Include pattern(s):</label>
+      <label for="includePattern">Include pattern(s) (optional):</label>
       <div class="input-wrapper">
         <input type="text" id="includePattern" placeholder="e.g., src/*.jsx, foo.*" />
         <small>Add multiple patterns separated by commas</small>
@@ -73,10 +94,10 @@
       </div>
       
       <button type="button" id="startSemgrepScan">Start Scan</button>
-      <button type="button" id="importSemgrepScanResults">Import Results form Semgrep scan</button> 
     </div>
     
   </div>
+  <button type="button" id="goToMatches">Go To Machtes</button>
   <script src={{scriptUri}}></script>
 </body>
 </html>

@@ -1,28 +1,40 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as vscode from 'vscode';
 import * as path from 'path';
-import generateMatchesWebview, { setCategory, setRule, setStatus } from './matchesWebview';
+import generateMatchesWebview, {
+  excludedPath, setRule, setStatus
+} from './matchesWebview';
 import { setCriticality } from './matchesWebview';
 import {
-  addComment,
-  allMatches, deduplicateMatches, jumpToCode, setStatusAs, updateAllMatches
+  addComment, allMatches, clearAllToggledMatches, deduplicateMatches,
+  jumpToCode, setBatchAction, setStatusAs, toggledMatchIds, updateAllMatches,
+  updateToggleState
 } from './matches';
 import {
   newProject, loadProject, saveProject, displayNoProjectWarning,
 } from './projects';
-import generateStartWebview from './startWebview';
+// import generateStartWebview from './startWebview';
 import generateSemgrepWebview from './semgrepWebview';
-import { startImportSemgrepJson, isRelative, finalImportSemgrepJson, handlePathSelection, startSemgrepScan,} from './semgrep';
+import {
+  isRelative,  handlePathSelection, handleOutputPathSelection,
+  jsonData
+} from './semgrep';
 import { FileExplorerProvider, FileNode } from './fileView';
+import { logger } from './logging';
+import { startSemgrepScan } from './semgrepRunner';
+import { finalImportSemgrepJson, startImportSemgrepJson } from './semgrepImporter';
+import { allMatchesTestSection, generateTestSectionMatchesWebview } from './testSectionMatchesWebview';
 
+export let fileExplorerProvider: FileExplorerProvider;
 
 // Activate the extension.
 export const activate = (context: vscode.ExtensionContext) => {
   const localPath = context.extensionPath;
-
+  logger.info('SAH extension activated!');
   let panel: vscode.WebviewPanel;
   let active = false;
-  const fileExplorerProvider = new FileExplorerProvider(vscode.workspace.rootPath || "");
-  
+  fileExplorerProvider = new FileExplorerProvider(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? "");
+
   /*
   Register a Tree View
   https://code.visualstudio.com/api/extension-guides/tree-view
@@ -33,61 +45,127 @@ export const activate = (context: vscode.ExtensionContext) => {
   https://code.visualstudio.com/api/references/contribution-points#contributes.menus
   */
 
+  // fileExplorerProvider is defined in fileView.ts
   vscode.window.registerTreeDataProvider("fileExplorer", fileExplorerProvider);
 
+  // push commands for the fileExplorer
   context.subscriptions.push(
-    vscode.commands.registerCommand("fileExplorer.refresh", () => fileExplorerProvider.refresh())
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand("fileExplorer.exclude", (node: FileNode) =>
-      fileExplorerProvider.exclude(node.filePath)
-    )
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand("fileExplorer.unexclude", (node: FileNode) =>
-      fileExplorerProvider.unexclude(node.filePath)
-    )
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand("fileExplorer.showMatchesIn",(node: FileNode) => 
-      fileExplorerProvider.onlyShowMatchesIn(node.filePath)
-    )
-  )
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand("fileExplorer.toggleHidden", () => {
-      fileExplorerProvider.toggleExcluded();    
-    })
-  );
-
-  // Add the same logic for toggleHidden
-  context.subscriptions.push(
-    vscode.commands.registerCommand("fileExplorer.toggleVisible", () => {
-      fileExplorerProvider.toggleExcluded();
-    })
-  )
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand("fileExplorer.resetExclusion", () => {
-      fileExplorerProvider.resetExclusion();
-    }),
-    vscode.commands.registerCommand("fileExplorer.resetExclusionShortText", () => {
-      fileExplorerProvider.resetExclusion();
-    }),
-  ) 
-
-  context.subscriptions.push(
+    vscode.commands.registerCommand("fileExplorer.refresh", () => fileExplorerProvider.refresh()),
+    vscode.commands.registerCommand("fileExplorer.excludeFile", (uri: vscode.Uri) =>
+      fileExplorerProvider.excludeFile(uri.fsPath)
+    ),
+    vscode.commands.registerCommand("fileExplorer.excludeFolder", (uri: vscode.Uri) =>
+      fileExplorerProvider.excludeFolder(uri.fsPath)
+    ),
+    vscode.commands.registerCommand("fileExplorer.unexcludeFile", (uri: vscode.Uri) =>
+      fileExplorerProvider.unexcludeFile(uri.fsPath)
+    ),
+    vscode.commands.registerCommand("fileExplorer.unexcludeFolder", (uri: vscode.Uri) =>
+      fileExplorerProvider.unexcludeFolder(uri.fsPath)
+    ),
+    vscode.commands.registerCommand("fileExplorer.showMatchesForFolder", (uri: vscode.Uri) => 
+      fileExplorerProvider.showMatchesForFolder(uri.fsPath)
+    ),
     vscode.commands.registerCommand("fileExplorer.showMatchesForFile", (uri: vscode.Uri) => {
       if (uri && uri.fsPath) {
-          //vscode.window.showInformationMessage(`Showing matches for: ${uri.fsPath}`);
           fileExplorerProvider.showMatchesForFile(uri.fsPath);   
       }
-    })
+    }),
+    // now the same but with nodes form the treeView
+    vscode.commands.registerCommand("fileExplorer.excludeFileNode", (node: FileNode) =>
+      fileExplorerProvider.excludeFile(node.filePath)
+    ),
+    vscode.commands.registerCommand("fileExplorer.excludeFolderNode", (node: FileNode) =>
+      fileExplorerProvider.excludeFolder(node.filePath)
+    ),
+    vscode.commands.registerCommand("fileExplorer.unexcludeFileNode", (node: FileNode) =>
+      fileExplorerProvider.unexcludeFile(node.filePath)
+    ),
+    vscode.commands.registerCommand("fileExplorer.unexcludeFolderNode", (node: FileNode) =>
+      fileExplorerProvider.unexcludeFolder(node.filePath)
+    ),    
+    vscode.commands.registerCommand("fileExplorer.toggleHidden", () => 
+      fileExplorerProvider.toggleExcluded()
+    ),
+    vscode.commands.registerCommand("fileExplorer.toggleVisible", () => 
+      fileExplorerProvider.toggleExcluded()
+    ),
+    vscode.commands.registerCommand("fileExplorer.resetExclusion", () => 
+      fileExplorerProvider.resetExclusion()
+    ),
+    vscode.commands.registerCommand("fileExplorer.resetExclusionShortText", () => 
+      fileExplorerProvider.resetExclusion()
+    ),
   );
   /* End Register Tree View */
+
+  /* Register commands for Logging*/
+  context.subscriptions.push(
+    vscode.commands.registerCommand('SAH.setLogLevelDebug', () => logger.setLogLevel('debug')),
+    vscode.commands.registerCommand('SAH.setLogLevelInfo',  () => logger.setLogLevel('info')),
+    vscode.commands.registerCommand('SAH.setLogLevelWarn',  () => logger.setLogLevel('warn')),
+    vscode.commands.registerCommand('SAH.setLogLevelError', () => logger.setLogLevel('error')),
+    vscode.commands.registerCommand('SAH.setLogLevelOff',   () => logger.setLogLevel('off'))
+  );
+
+
+  // Main commands for project (Exportet Commands in the Commands box --> Crtl + Shift + P)
+  context.subscriptions.push(
+    vscode.commands.registerCommand("extension.importSemgrepScan", () => {
+      displayNoProjectWarning();
+      activePanel().webview.html = generateSemgrepWebview(activePanel().webview, localPath);
+      //importSemgrepJson()
+    }),
+    vscode.commands.registerCommand("extension.newProject", () => {
+      const callback = () => {
+        //activePanel().webview.html = generateStartWebview(activePanel().webview, localPath);
+        activePanel().webview.html = generateSemgrepWebview(activePanel().webview, localPath);
+      };
+      newProject(callback);
+    }),
+    vscode.commands.registerCommand("extension.loadProject", () => {
+      // set HTML content
+      const callback = () => {
+        vscode.commands.executeCommand('extension.showMatchesList');
+      };
+      loadProject(callback);
+    }),
+    vscode.commands.registerCommand("extension.showMatchesList", () => {
+      // set HTML content
+      const htmlContent = generateMatchesWebview(allMatches, activePanel().webview, localPath);
+
+      // Log the size of the HTML content
+      logger.debug(`Generated HTML size: ${htmlContent.length} characters`);
+      logger.debug(`Approximate memory usage: ${(Buffer.byteLength(htmlContent, 'utf8') / 1024 / 1024).toFixed(2)} MB`);
+      saveProject()
+      activePanel().webview.html = htmlContent;
+    }),
+    vscode.commands.registerCommand("extension.saveProject", () => saveProject()),
+    vscode.commands.registerCommand("extension.deduplicateMatches", () => {
+      const newMatches = deduplicateMatches(allMatches)
+      updateAllMatches(newMatches)
+      vscode.commands.executeCommand('extension.showMatchesList');
+    }),
+    vscode.commands.registerCommand("extension.showHelp", () => {
+      const readmePath = path.join(context.extensionPath, "readme.md");
+      logger.debug("Open readme from location: " + readmePath);
+      vscode.commands.executeCommand("markdown.showPreview", vscode.Uri.file(readmePath));
+    })
+  )
+
+  // Test Section
+
+  vscode.commands.registerCommand("extension.showMatchesTestSection", () => {
+    // set HTML content
+    const htmlContent = generateTestSectionMatchesWebview(allMatchesTestSection, activePanel().webview, localPath);
+
+    // Log the size of the HTML content
+    logger.debug(`Generated HTML size: ${htmlContent.length} characters`);
+    logger.debug(`Approximate memory usage: ${(Buffer.byteLength(htmlContent, 'utf8') / 1024 / 1024).toFixed(2)} MB`);
+    saveProject()
+    activePanel().webview.html = htmlContent;
+  })
+
   const activePanel = () => {
     if (active) {
       return panel;
@@ -95,8 +173,8 @@ export const activate = (context: vscode.ExtensionContext) => {
 
     // initialize webview panel
     panel = vscode.window.createWebviewPanel(
-      'sah', // type of webview
-      'SAH', // title of panel
+      'sah',
+      'Static Analysis Hero (SAH)',
       vscode.ViewColumn.Beside,
       {
         enableScripts: true,
@@ -106,151 +184,179 @@ export const activate = (context: vscode.ExtensionContext) => {
 
     panel.onDidDispose(() => { active = false; });
 
+    /* 
+    A handlers "list/dict" that maps the command from the frontend to the function 
+    --> command "jmp" calls the hJump
+
+    To add a new command create and add your command name here!  
+
+    */
+    const handlers: Record<string, (message: any) => any> = {
+      jmp                        : hJump,
+      setStatusAsFinding         : hSetStatusAs('finding'),
+      setStatusAsFalsePositive   : hSetStatusAs('falsePositive'),
+      setStatusAsSaveForLater    : hSetStatusAs('saveForLater'),
+      setCriticality             : hSetCriticality,
+      setStatus                  : hSetStatus,
+      setRule                    : hSetRule,
+      showMatches                : hShowMatches,
+      showSemgrep                : hShowSemgrep,
+      startSemgrepImport         : hStartSemgrepImport,
+      validatePath               : hValidatePath,
+      configPathBtn              : hConfigPathBtn,
+      outputPathBtn              : hOutputPathBtn,
+      startImportSemgrepBtn      : hStartImportSemgrepBtn,
+      startSemgrepScan           : hStartSemgrepScan,
+      importSemgrepScanResults   : hImportSemgrepScanResults,
+      addComment                 : hAddComment,
+      showMessage                : hShowMessage,
+      openFileViewer             : hOpenFileViewer,
+      changePage                 : hChangePage,
+      changePageTestSection      : hChangePageTestSection,
+      isFileExclusionSet         : hIsFileExclusionSet,
+      toggleMatch                : hToggleMatch,
+      getToggledMatches          : hGetToggledMatches,
+      batchAction                : hBatchAction,
+      clearAllSelcted            : hClearAllSelected,
+      createSplitView            : hCreateSplitView,
+      importMatchesTestSection   : hImportMatchesTestSection,
+    };
+
+    const post = (msg: any) => panel.webview.postMessage(msg);
+    const cmd = (c: string) => vscode.commands.executeCommand(c);
+    const log = (...a: any[]) => logger.debug('[msg]', ...a);
+    const showMatchesList = () => cmd('extension.showMatchesList');
+
+    function hJump(message:any){ 
+      jumpToCode(message.data);
+    }
+    function hSetStatusAs(type: 'finding' | 'falsePositive' | 'saveForLater') {
+      return (message: any) => setStatusAs(message.data, type);
+    }
+    function hSetCriticality(message: any){
+      setCriticality(message.criticality, panel);
+      showMatchesList();
+    }
+    function hSetStatus(message: any){
+      setStatus(message.status, panel);
+      showMatchesList();
+    }
+    function hSetRule(message: any){
+      setRule(message.rule, panel);
+      showMatchesList();
+    }
+    function hShowMatches(){
+      showMatchesList();
+    }
+    function hShowSemgrep(){
+      cmd('extension.importSemgrepScan');
+    }
+    function hStartSemgrepImport(message: any){
+      startImportSemgrepJson(panel, message.path);
+    }
+    function hValidatePath(message: any) {
+      post({ command: 'validatePathResponse', isValid: isRelative(message.path) });
+    }
+    function hConfigPathBtn() {
+      handlePathSelection(
+        'configPathBtn',
+        'dynamic',
+        'Select config file/folder to use for the scan',
+        panel
+      );
+    }
+    function hOutputPathBtn(message: any){
+      handleOutputPathSelection(message.config, panel);
+    }
+    function hStartImportSemgrepBtn() {
+      handlePathSelection(
+        'startImportSemgrepBtn',
+        'file',
+        'Select a JSON semgrep Scan',
+        panel
+      );
+    }
+    async function hStartSemgrepScan(message: any) {
+      displayNoProjectWarning();
+      try {
+        await startSemgrepScan(message.config, message.output, message.include, message.exclude, panel, message.isTest);
+        post({ command: 'scanComplete', matchesCount: jsonData.data.results.length });
+      } catch (e: any) {
+        post({ command: 'scanFailed', errorMessage: e?.message ?? 'Unknown error' });
+      }
+    }
+    function hImportSemgrepScanResults(){
+      displayNoProjectWarning();
+      finalImportSemgrepJson(false);
+    }
+    async function hAddComment(message: any){
+      await addComment(message.data, message.data_id);
+    }
+    function hShowMessage(message: any){
+      vscode.window.showInformationMessage(message.message);
+    }
+    function hOpenFileViewer() {
+      cmd('workbench.view.explorer');
+      cmd('fileExplorer.focus');
+    }
+    function hChangePage(message: any){
+      panel.webview.html = generateMatchesWebview(allMatches, panel.webview, localPath, message.page);
+    }
+    function hIsFileExclusionSet() {
+      const value = excludedPath.length > 0    ;
+      post({ command: 'isFileExclusionSetResponse', status: value });
+    }
+
+    function hToggleMatch(message: any){ 
+      updateToggleState(Number(message.matchId), Boolean(message.checked));
+    }
+    function hGetToggledMatches(){
+      const selected = Array.from(toggledMatchIds)      
+      post({ command: 'getToggledMatchesResponse', selectedMatches: selected });
+    }
+    function hBatchAction(message: any){
+      setBatchAction(message.action);
+    }
+    function hClearAllSelected(){
+      clearAllToggledMatches();
+    }
+    async function hCreateSplitView(message: any){
+      const document = await vscode.workspace.openTextDocument(vscode.Uri.file(message.filePath));
+      await vscode.window.showTextDocument(document, {
+        viewColumn : vscode.ViewColumn.One,   // always left-most column
+        preview    : false                    // keep it open even after losing focus
+      });
+
+      panel.reveal(vscode.ViewColumn.Beside);
+    }
+    function hChangePageTestSection(message: any){
+      panel.webview.html = generateTestSectionMatchesWebview(allMatchesTestSection, panel.webview, localPath, message.page);
+    }
+    function hImportMatchesTestSection(){
+      if (typeof jsonData !== 'undefined' &&
+        Array.isArray(jsonData?.data?.results)) {
+
+      const isTest = false; // we want to import to "allMatches"
+      finalImportSemgrepJson(isTest);
+      return;
+    }
+      vscode.window.showInformationMessage("There is currently no data to import!");
+    }
     // listen for messages from the webview
+    // this now calles the function based on the command set in the handlers
     panel.webview.onDidReceiveMessage(
       async (message) => {
-        switch (message.command) {
-          case 'jmp':
-            jumpToCode(message.data);
-            break;
-          case 'setStatusAsFinding':
-            setStatusAs(message.data,"finding")            
-            break;
-          case 'setStatusAsFalsePositive':
-            setStatusAs(message.data,"falsePositive")
-            break;
-          case 'setStatusAsSaveForLater':
-            setStatusAs(message.data,"saveForLater")
-            break;
-          case 'setCriticality':
-            setCriticality(message.criticality,panel);
-            vscode.commands.executeCommand('extension.showMatchesList');
-            break;
-          case 'setStatus':
-            setStatus(message.status,panel);
-            vscode.commands.executeCommand('extension.showMatchesList');
-            break;
-          case 'setCategory':
-            setCategory(message.category,panel);
-            vscode.commands.executeCommand('extension.showMatchesList');
-            break;
-          case 'setRule':
-            setRule(message.rule,panel);
-            vscode.commands.executeCommand('extension.showMatchesList');
-            break;
-          case 'showMatches':
-            vscode.commands.executeCommand('extension.showMatchesList');
-            break;
-          case 'startSemgrepImport':
-            console.debug("startSemgrepImport called")
-            startImportSemgrepJson(panel, message.path);            
-            break;
-          case 'finalSemgrepImport':{            
-            console.debug('finalSemgrepImport called')
-            finalImportSemgrepJson();            
-            break;
-          }
-          case 'validatePath':{
-            const isValid = isRelative(message.path);
-            console.debug(`validatePath called ${message.path} ${isValid}`)          
-            panel.webview.postMessage({
-                command: 'validatePathResponse',
-                isValid: isValid
-            });
-            break;
-          }
-          case 'scanTargetBtn':
-            handlePathSelection(
-              'scanTargetBtn',
-              'dynamic',
-              'Select a folder or file to scan',
-              panel);
-            break;
-        
-          case 'configPathBtn':
-            handlePathSelection(
-              'configPathBtn',
-              'file',
-              'Select config file to use for the scan',
-              panel
-            );
-            break;
-        
-          case 'outputPathBtn':
-            handlePathSelection(
-              'outputPathBtn',
-              'folder',
-              'Select a folder for the output destination',
-              panel
-            );
-            break; 
-          
-          case 'startImportSemgrepBtn':
-            handlePathSelection(
-              'startImportSemgrepBtn',
-              'file',
-              'Select a JSON semgrep Scan',
-              panel
-            )
-            break;
-          case 'startSemgrepScan':{           
-            const exclude: string = message.exclude
-            const include: string  = message.include 
-            const output: string  = message.output
-            const config: string  = message.config
-            const target: string  = message.target
-            displayNoProjectWarning();
-            console.debug(message)            
-            try {
-              await startSemgrepScan(target, config, output, include, exclude, panel);
-              panel.webview.postMessage({
-                  command: 'scanComplete',
-              });
-              
-            } catch (error ) {
-              console.debug("extension error")
-              // typescript types :D
-              if (error instanceof Error) {     
-                console.debug("scanFailed sending")           
-                panel.webview.postMessage({
-                    command: 'scanFailed',
-                    errorMessage: error.message,
-                });
-              } else {
-                // Fallback if the type is not an Error 
-                panel.webview.postMessage({
-                    command: 'scanFailed',
-                    errorMessage: 'An unknown error occurred',
-                });
-              }
-            }            
-            break 
-          }
-          case 'importSemgrepScanResults':
-            displayNoProjectWarning();
-            finalImportSemgrepJson()
-            break;  
-
-          case 'addComment':
-            await addComment(message.data,message.data_id)
-            break
-          case 'showMessage':
-            vscode.window.showInformationMessage(message.message);
-            break
-          
-          case 'openFileViewer':
-            // show File Viewer
-            vscode.commands.executeCommand('workbench.view.explorer');
-            vscode.commands.executeCommand('fileExplorer.focus');
-            break
-            
-          case 'changePage':{
-            const newPage = message.page;
-            panel.webview.html = generateMatchesWebview(allMatches, panel.webview, localPath, newPage);
-            break
-          }
-          default:
-            break;
+        log(message.command);
+        const functionHandle = handlers[message.command];
+        if (!functionHandle){
+          logger.error('Unknown command', message.command);
+          return;
+        }
+        try {
+          await functionHandle(message);
+        }
+        catch (e){ 
+          logger.error('handler failed', e);
         }
       },
       undefined,
@@ -259,58 +365,6 @@ export const activate = (context: vscode.ExtensionContext) => {
     active = true;
     return panel;
   };
-
-
-  const importSemgrep = vscode.commands.registerCommand('extension.importSemgrepScan', async () => {
-    displayNoProjectWarning();
-    activePanel().webview.html = generateSemgrepWebview(activePanel().webview, localPath);
-    //importSemgrepJson()
-    context.subscriptions.push(importSemgrep);
-  });
-
-
-  const newProjectRegister = vscode.commands.registerCommand('extension.newProject', () => {
-    const callback = () => {
-      // set HTML content
-      activePanel().webview.html = generateStartWebview(activePanel().webview, localPath);
-    };
-    newProject(callback);
-    context.subscriptions.push(newProjectRegister);
-  });
-
-  const loadProjectRegister = vscode.commands.registerCommand('extension.loadProject', () => {
-    // set HTML content
-    const callback = () => {
-      vscode.commands.executeCommand('extension.showMatchesList');
-    };
-    loadProject(callback);
-    context.subscriptions.push(loadProjectRegister);
-  });
-
-  const showMatchesList = vscode.commands.registerCommand('extension.showMatchesList', () => {
-    // set HTML content
-    const htmlContent = generateMatchesWebview(allMatches, activePanel().webview, localPath);
-
-    // Log the size of the HTML content
-    console.log(`Generated HTML size: ${htmlContent.length} characters`);
-    console.log(`Approximate memory usage: ${(Buffer.byteLength(htmlContent, 'utf8') / 1024 / 1024).toFixed(2)} MB`);
-
-    activePanel().webview.html = htmlContent;
-
-    context.subscriptions.push(showMatchesList);
-  });
-
-  const saveProjectcommand = vscode.commands.registerCommand('extension.saveProject', () =>{
-    saveProject()
-    context.subscriptions.push(saveProjectcommand);
-  });
-
-  const deduplicateMatchesCommand = vscode.commands.registerCommand('extension.deduplicateMatches', () => {
-    const newMatches = deduplicateMatches(allMatches)
-    updateAllMatches(newMatches)
-    context.subscriptions.push(deduplicateMatchesCommand)
-    vscode.commands.executeCommand('extension.showMatchesList');
-  })
 };
 
 export const deactivate = () => { };

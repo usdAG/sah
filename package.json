@@ -3,9 +3,10 @@
 	"displayName": "Static Analysis Hero",
 	"publisher": "usdAG",
 	"description": "Bringing code-reviews to the next level",
+	"icon": "src/media/logo.png",
 	"version": "2.0.1",
 	"engines": {
-		"vscode": "^1.40.0"
+		"vscode": "^1.99.0"
 	},
 	"categories": [
 		"Other"
@@ -13,115 +14,283 @@
 	"activationEvents": [],
 	"main": "./dist/extension",
 	"contributes": {
-		"commands": [			
+		"configuration": {
+			"properties": {
+				"SAH.logLevel": {
+					"type": "string",
+					"default": "info",
+					"enum": [
+						"debug",
+						"info",
+						"warn",
+						"error",
+						"off"
+					],
+					"description": "Log level for SAH's output channel."
+				}
+			}
+		},
+		"commands": [
 			{
 				"command": "extension.newProject",
-				"title": "SAH New Project"
+				"title": "SAH: New Project"
 			},
 			{
 				"command": "extension.loadProject",
-				"title": "SAH Load Project"
+				"title": "SAH: Load Project"
 			},
 			{
 				"command": "extension.showMatchesList",
-				"title": "SAH Show Matches List"
+				"title": "SAH: Show Matches List"
 			},
 			{
 				"command": "extension.importSemgrepScan",
-				"title": "SAH Semgrep"
+				"title": "SAH: Scan Code"
 			},
 			{
 				"command": "fileExplorer.refresh",
-				"title": "SAH Refresh File Explorer"
+				"title": "SAH: Refresh File Explorer"
 			},
 			{
-				"command": "fileExplorer.exclude",
-				"title": "Exclude File/Folder"
+				"command": "fileExplorer.excludeFile",
+				"title": "SAH: Exclude File"
 			},
 			{
-				"command": "fileExplorer.unexclude",
-				"title": "Unexclude File/Folder"
+				"command": "fileExplorer.excludeFolder",
+				"title": "SAH: Exclude Folder"
 			},
 			{
-				"command": "fileExplorer.showMatchesIn",
-				"title": "Show Matches in this path"
+				"command": "fileExplorer.unexcludeFile",
+				"title": "SAH: Unexclude File"
 			},
-      {
-        "command": "fileExplorer.toggleHidden",
-        "title": "Hide Excluded Files"  
-      },
-      {
-        "command": "fileExplorer.toggleVisible",
-        "title": "Show Excluded Files"  
-      },
-      {
-        "command": "extension.saveProject",
-        "title": "SAH Save Project"
-      },
-      {
-        "command": "fileExplorer.showMatchesForFile",
-        "title": "SAH Only show Matches for this file/folder"
-      },
-      {
-        "command": "fileExplorer.resetExclusion",
-        "title": "SAH Reset the Exclusion of all files/folders"
-      },
-	  {
-        "command": "fileExplorer.resetExclusionShortText",
-        "title": "Reset Excludes"
-      },
-      {
-        "command": "extension.deduplicateMatches",
-        "title": "SAH deduplicate Matches"
-      }
+			{
+				"command": "fileExplorer.unexcludeFolder",
+				"title": "SAH: Unexclude Folder"
+			},
+			{
+				"command": "fileExplorer.excludeFileNode",
+				"title": "SAH: Exclude File"
+			},
+			{
+				"command": "fileExplorer.excludeFolderNode",
+				"title": "SAH: Exclude Folder"
+			},
+			{
+				"command": "fileExplorer.unexcludeFileNode",
+				"title": "SAH: Unexclude File"
+			},
+			{
+				"command": "fileExplorer.unexcludeFolderNode",
+				"title": "SAH: Unexclude Folder"
+			},
+			{
+				"command": "fileExplorer.showMatchesForFolder",
+				"title": "SAH: Only show Matches in this path"
+			},
+			{
+				"command": "fileExplorer.toggleHidden",
+				"title": "SAH: Hide Excluded Files"
+			},
+			{
+				"command": "fileExplorer.toggleVisible",
+				"title": "SAH: Show Excluded Files"
+			},
+			{
+				"command": "extension.saveProject",
+				"title": "SAH: Save Project"
+			},
+			{
+				"command": "fileExplorer.showMatchesForFile",
+				"title": "SAH: Only show Matches for this file"
+			},
+			{
+				"command": "fileExplorer.resetExclusion",
+				"title": "SAH: Reset the Exclusion of all files/folders"
+			},
+			{
+				"command": "fileExplorer.resetExclusionShortText",
+				"title": "SAH: Reset Excludes"
+			},
+			{
+				"command": "extension.deduplicateMatches",
+				"title": "SAH: deduplicate Matches"
+			},
+			{
+				"command": "SAH.setLogLevelDebug",
+				"title": "SAH: Set Log Level to Debug"
+			},
+			{
+				"command": "SAH.setLogLevelInfo",
+				"title": "SAH: Set Log Level to Info"
+			},
+			{
+				"command": "SAH.setLogLevelWarn",
+				"title": "SAH: Set Log Level to Warn"
+			},
+			{
+				"command": "SAH.setLogLevelError",
+				"title": "SAH: Set Log Level to Error"
+			},
+			{
+				"command": "SAH.setLogLevelOff",
+				"title": "SAH: Set Log Level to Off"
+			},
+			{
+				"command": "extension.showHelp",
+				"title": "SAH: Show Help"
+			},
+			{
+				"command": "extension.showMatchesTestSection",
+				"title": "SAH: Scanning Sandbox"
+			}
 		],
-		"keybindings": [
-		],
-		"menus": {			
-      "view/title": [
-        {
-          "command": "fileExplorer.toggleHidden",
-          "when": "view == fileExplorer && fileExplorer:showExcluded",
-          "group": "navigation"
-        },
-        {
-          "command": "fileExplorer.toggleVisible",
-          "when": "view == fileExplorer && !fileExplorer:showExcluded",
-          "group": "navigation"
-        },
-		{
-			"command": "fileExplorer.resetExclusionShortText",
-			"when": "view == fileExplorer",
-			"group": "navigation"
-		}
-      ],
-			"view/item/context": [
+		"keybindings": [],
+		"menus": {
+			"commandPalette": [
 				{
-					"command": "fileExplorer.exclude",
-					"when": "view == fileExplorer",
+					"command": "fileExplorer.showMatchesForFile",
+					"when": "false"
+				},
+				{
+					"command": "extension.deduplicateMatches",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.resetExclusionShortText",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.resetExclusion",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.showMatchesForFile",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.toggleVisible",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.toggleHidden",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.showMatchesForFolder",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.unexcludeFolderNode",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.unexcludeFileNode",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.excludeFolderNode",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.excludeFileNode",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.unexcludeFolder",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.unexcludeFile",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.excludeFolder",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.excludeFile",
+					"when": "false"
+				},
+				{
+					"command": "fileExplorer.refresh",
+					"when": "false"
+				}
+			],
+			"view/title": [
+				{
+					"command": "fileExplorer.toggleHidden",
+					"when": "view == fileExplorer && fileExplorer:showExcluded",
 					"group": "navigation"
 				},
 				{
-					"command": "fileExplorer.unexclude",
-					"when": "view == fileExplorer",
+					"command": "fileExplorer.toggleVisible",
+					"when": "view == fileExplorer && !fileExplorer:showExcluded",
 					"group": "navigation"
 				},
 				{
-					"command": "fileExplorer.showMatchesIn",
+					"command": "fileExplorer.resetExclusionShortText",
 					"when": "view == fileExplorer",
 					"group": "navigation"
 				}
 			],
-      "explorer/context": [        
-        {
-          "command": "fileExplorer.showMatchesForFile",
-          "group": "navigation@1"
-        },
-        {
-          "command": "fileExplorer.resetExclusion",
-          "group": "navigation@2"
-        }    
-      ]
+			"view/item/context": [
+				{
+					"command": "fileExplorer.excludeFileNode",
+					"when": "view == fileExplorer",
+					"group": "navigation"
+				},
+				{
+					"command": "fileExplorer.unexcludeFileNode",
+					"when": "view == fileExplorer",
+					"group": "navigation"
+				},
+				{
+					"command": "fileExplorer.excludeFolderNode",
+					"when": "view == fileExplorer",
+					"group": "navigation"
+				},
+				{
+					"command": "fileExplorer.unexcludeFolderNode",
+					"when": "view == fileExplorer",
+					"group": "navigation"
+				}
+			],
+			"explorer/context": [
+				{
+					"command": "fileExplorer.showMatchesForFile",
+					"when": "explorerResourceIsFolder == false",
+					"group": "SAH@1"
+				},
+				{
+					"command": "fileExplorer.showMatchesForFolder",
+					"when": "explorerResourceIsFolder == true",
+					"group": "SAH@1"
+				},
+				{
+					"command": "fileExplorer.excludeFile",
+					"when": "explorerResourceIsFolder == false",
+					"group": "SAH@2"
+				},
+				{
+					"command": "fileExplorer.excludeFolder",
+					"when": "explorerResourceIsFolder == true",
+					"group": "SAH@2"
+				},
+				{
+					"command": "fileExplorer.unexcludeFile",
+					"when": "explorerResourceIsFolder == false",
+					"group": "SAH@3"
+				},
+				{
+					"command": "fileExplorer.unexcludeFolder",
+					"when": "explorerResourceIsFolder == true",
+					"group": "SAH@3"
+				},
+				{
+					"command": "fileExplorer.resetExclusion",
+					"group": "SAH@4"
+				}
+			]
 		},
 		"views": {
 			"explorer": [
@@ -142,30 +311,33 @@
 		"test": "node ./out/test/runTest.js"
 	},
 	"devDependencies": {
-		"@types/glob": "^8.1.0",
-		"@types/mocha": "^10.0.1",
-		"@types/node": "^20.4.2",
-		"@types/vscode": "^1.40.0",
-		"@typescript-eslint/eslint-plugin": "^6.1.0",
-		"@typescript-eslint/parser": "^6.1.0",
-		"eslint": "^8.45.0",
+		"@eslint/js": "^9.31.0",
+		"@types/glob": "^9.0.0",
+		"@types/mocha": "^10.0.10",
+		"@types/node": "^24.0.14",
+		"@types/vscode": "^1.99.0",
+		"@typescript-eslint/eslint-plugin": "^8.37.0",
+		"@typescript-eslint/parser": "^8.37.0",
+		"@vscode/vsce": "^3.6.0",
+		"eslint": "^9.31.0",
 		"eslint-config-airbnb-base": "^15.0.0",
-		"eslint-plugin-import": "^2.18.2",
-		"glob": "^10.3.3",
-		"mocha": "^10.2.0",
-		"ts-loader": "^9.4.4",
-		"typescript": "^5.1.6",
-		"vscode-test": "^1.2.2",
-		"webpack": "^5.88.2",
-		"webpack-cli": "^5.1.4"
+		"eslint-plugin-import": "^2.32.0",
+		"glob": "^11.0.3",
+		"globals": "^16.3.0",
+		"mocha": "^11.7.1",
+		"ts-loader": "^9.5.2",
+		"typescript": "^5.8.3",
+		"typescript-eslint": "^8.37.0",
+		"vscode-test": "^1.6.1",
+		"webpack": "^5.100.2",
+		"webpack-cli": "^6.0.1"
 	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/usdAG/sah"
 	},
 	"dependencies": {
-		"axios": "^1.4.0",
-		"sanitize-html": "^2.11.0",
-		"vsce": "^2.15.0"
+		"axios": "^1.10.0",
+		"sanitize-html": "^2.17.0"
 	}
 }
