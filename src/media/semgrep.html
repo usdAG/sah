@@ -2,30 +2,31 @@
 <html lang='en'>
 <head>
     <meta charset='UTF-8'>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src {{cspSource}}; script-src {{cspSource}};">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src {{cspSource}}; script-src {{cspSource}}; img-src {{cspSource}};">
     <link rel="stylesheet" type="text/css" href={{stylesheetUri}} />
     
     <title>Semgrep Tool</title>
   
 </head>
 <body>
+  {{htmlheader}}
   <div class="container">    
     <form id="semgrepForm">
       <!-- Import Semgrep -->
       <div class="form-group">
-        <h3>Import Semgrep</h3>        
+        <h3>Import Semgrep / Opengrep</h3>
         <div class="input-wrapper">
           <button type="button" id="startImportSemgrep">Select Scan</button>
-          <input type="text" id="semgrepScanImportPath" placeholder="Enter the path to your Semgrep Scan">
+          <input type="text" id="semgrepScanImportPath" placeholder="Path to Semgrep / Opengrep Scan Results in JSON-format">
         </div>        
         <button type="button" id="semgrepScanImportPathBtn">Import</button> 
         <label for="semgrepPath" id="semgrepPathLabel">
-          <strong>Note:</strong> The displayed path is from the first scanned file in your Semgrep scan.<br>
-          This path may <strong>not</strong> be relative to your project root. For SAH to work correctly, you need relative paths.<br>
-          <br>
-          To ensure relative paths in your Semgrep results, run your scan from the project root <i>without</i> specifying an absolute path.<br>
-          <br>
-          <strong>Example:</strong> <code>semgrep scan --config p/python --json-output 20250618_semgrep_p_python.json</code>
+          Error: The paths in the scan results don't match the current workspace.<br><br>
+          This may be caused by running semgrep / opengrep in a subdirectory of the current workspace.
+          In order to process results, SAH requires all paths to be relative to the project root.
+          To ensure relative paths, run the scan from the project root <i>without</i> specifying an absolute path.<br>
+          <strong>Example:</strong> <code>semgrep scan --config p/python --json-output &lt;filename&gt;.json</code><br><br>
+          The following example shows the path of the first result in the provided JSON file:<br>
         </label>
         <input type="text" id="semgrepPath" placeholder="" disabled>
         <span id="pathStatus" style="margin-left: 10px;"></span>

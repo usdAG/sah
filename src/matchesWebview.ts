@@ -1,7 +1,8 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { Match, toggledMatchIds } from './matches';
+import { Match, toggledMatchIds, criticalityOptions, statusOptions } from './matches';
 import { logger } from './logging';
+import { getHtmlHeader } from './webHelpers';
 
 export const sanitizeContent = (string: string) => {
   return string
@@ -11,7 +12,7 @@ export const sanitizeContent = (string: string) => {
 }
 
 // global vars for filters 
-let selectedStatus = "unprocessed"
+let selectedStatus = "all" // "unprocessed"
 let selectedCriticality = "0";
 let selectedRule = "all";
 export let excludedPath: string[] = [];
@@ -66,12 +67,12 @@ function generateRuleSelection(rules: Array<Match>) {
 
   return `
     <option value="all" id="rules-selection">All Rules/Patterns</option>
-    ${_rules.map((rules) => `<option value="${rules}">${rules}</option>`).join('')}
+    ${_rules.map((rules) => `<option value="${rules}">${formatDashedString(rules)}</option>`).join('')}
   `;
 }
 
 function applyStatusFilter(matches: Match[]){
-   if (selectedStatus !== "all") {
+  if (selectedStatus !== "all") {
     logger.debug('Status filter with: ', selectedStatus)
     matches = matches.filter((m) => m.status == selectedStatus);    
   }
@@ -79,43 +80,24 @@ function applyStatusFilter(matches: Match[]){
 }
 
 function applyCriticalityFilter(_matches: Match[]){
-
-  // Filter for Criticality 
-  const criticalityRank = {
-    INFO: 1,
-    LOW: 2,
-    MEDIUM: 3,
-    HIGH: 4,
-    CRITICAL: 5
-  };
-  logger.debug('Criticality filter with', selectedCriticality);    
-  // if selectedCriticality (6 7) sort them asc or desc
-  // typescript maaaagic
-  if (selectedCriticality === "6") {
-    // Ascending
-    _matches.sort((a, b) => 
-      criticalityRank[a.pattern.criticality as keyof typeof criticalityRank] - criticalityRank[b.pattern.criticality as keyof typeof criticalityRank]
-    );
-  } 
-  else if (selectedCriticality === "7") {
-    // Descending
-    _matches.sort((a, b) => 
-      criticalityRank[b.pattern.criticality as keyof typeof criticalityRank] - criticalityRank[a.pattern.criticality as keyof typeof criticalityRank]
-    );
-  } 
-  else if (selectedCriticality !== "0"){
-    // else filter _matches dependent on selected criticality
-    const selectedLabel = {
-      "1": "INFO",
-      "2": "LOW",
-      "3": "MEDIUM",
-      "4": "HIGH",
-      "5": "CRITICAL"
-    }[selectedCriticality];
+  if (selectedCriticality !== "0"){
+    const selectedLabel = criticalityOptions.find(option => option.value === selectedCriticality)?.label ?? "";
     _matches = _matches.filter(m => m.pattern.criticality === selectedLabel);
-    
   }
   return _matches
+}
+
+function getCriticalityIcon(selectedCriticalityLabel: string): string {
+  return criticalityOptions.find(option => option.label === selectedCriticalityLabel)?.icon ?? "";
+}
+
+function orderMatchesByCriticality(_matches: Match[]){
+  return _matches.sort((a, b) => {
+    const getRank = (label: string) =>
+    criticalityOptions.find(opt => opt.label === label)?.value ?? '0';
+
+    return parseInt(getRank(b.pattern.criticality)) - parseInt(getRank(a.pattern.criticality));
+  });
 }
 
 function applyRuleFilter(_matches: Match[]){
@@ -137,6 +119,15 @@ function applyExlusionFilter(_matches: Match[]){
   return _matches
 }
 
+function formatDashedString(input: string): string {
+  // Make detection type readable by replacing dashes with space and capitalization
+  return input
+    .split('-')
+    .filter(Boolean) // removes empty strings caused by consecutive dashes
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 const generateMatchesWebview = (
   matches: Array<Match>, webview: vscode.Webview, localPath: string, currentPage = 1, pageSize = 20
 ) => {
@@ -155,6 +146,7 @@ const generateMatchesWebview = (
   const ruleSelectionHTML = generateRuleSelection(_matches)
   _matches = applyRuleFilter(_matches)  
   _matches = applyExlusionFilter(_matches)
+  _matches = orderMatchesByCriticality(_matches)
 
   logger.debug("Generating HTML with matches")
 
@@ -166,6 +158,15 @@ const generateMatchesWebview = (
   // Get only the matches for the current page
   const paginatedMatches = _matches.slice(startIndex, endIndex);
   logger.debug(`Rendering page ${currentPage}/${totalPages} with ${ _matches.length} matches`);
+
+  if (totalMatches == 0) {
+    matchesString += `
+      <div class="no-match-container">
+        <p><strong>There are no matches!</strong><br></p>
+        <p>Please adjust filters, scan code or load project.</p>
+      </div>
+    `
+  }
 
   // loop over all _matches and append HTML for each one to matchesString
   paginatedMatches.forEach((m) => {
@@ -189,7 +190,7 @@ const generateMatchesWebview = (
     matchesString += `
       <div id="${m.matchId}" class="match-container">
         <div class="match-input">
-        <input
+          <input
             type="checkbox"
             title="Select"
             id="checkbox${m.matchId}"
@@ -200,15 +201,18 @@ const generateMatchesWebview = (
 
         <div class="match-content">
           <div>
-            <b>Match found in file </b>
-            <span class="file-highlight">${relativePath}</span>
+            <b>
+              ${getCriticalityIcon(m.pattern.criticality)}
+              Match #${m.matchId} found in file&nbsp;
+            </b>
+            <span class="file-highlight jump-to-code-btn" data-match="${m.matchId}">${relativePath}</span>
             <b>, line ${m.lineNumber}:</b>
           </div>
           <div class="icon-bar">
             <div class="jump-to-code-btn"   data-match="${m.matchId}" title="Jump to code">&#8631;</div>
             <div class="finding-btn"        data-match="${m.matchId}" title="Finding">&#8982;</div>
             <div class="falsePositive-btn"  data-match="${m.matchId}" title="False Positive">&#10006;</div>
-            <div class="saveForLater-btn"   data-match="${m.matchId}" title="Save for later">&#128427;</div>
+            <div class="saveForLater-btn"   data-match="${m.matchId}" title="Save for later">&#x1F570;</div>
           </div>
           <p>
             <div class="code-line">
@@ -222,12 +226,11 @@ const generateMatchesWebview = (
           <table class="match-meta">
             <tr>
               <td>Type:</td>
-              <td>${m.pattern.id}</td>
+              <td>${formatDashedString(m.pattern.id)}</td>
             </tr>
             <tr>
               <td>Description:</td>
               <td class="desc-cell">
-                <span class="desc-text">${truncatedDesc}</span>
                 ${
                   fullDesc.length > MAX_DESC_LEN
                     ? `<button
@@ -237,11 +240,12 @@ const generateMatchesWebview = (
                       >Show more</button>`
                     : ''
                 }
+                <span class="desc-text">${truncatedDesc}</span>
               </td>
             </tr>
             <tr>
               <td>Criticality:</td>
-              <td>${m.pattern.criticality}</td>
+              <td>${getCriticalityIcon(m.pattern.criticality)}&nbsp;${m.pattern.criticality}</td>
             </tr>
             <tr>
               <td>Status:</td>
@@ -276,50 +280,63 @@ const generateMatchesWebview = (
   const scriptPath = vscode.Uri.file(
     path.join(localPath, 'src', 'media', 'matches.js'),
   );
+
+  const paginationPanel = totalMatches > 0 ? `
+    <div class="pagination">
+      <span>Total Matches: ${totalMatches} | Page ${currentPage} of ${totalPages}</span>
+
+      <button id="first-page" data-page="1" ${currentPage === 1 ? 'disabled' : ''}>⇤ First</button>
+      <button id="prev-page" data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}>← Prev</button>
+
+      <span class="page-info">Page ${currentPage} / ${totalPages}</span>
+
+      <button id="next-page" data-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''}>Next →</button>
+      <button id="last-page" data-page="${totalPages}" ${currentPage === totalPages ? 'disabled' : ''}>Last ⇥</button>
+    </div>
+  ` : "<br>";
+
+  const statusSelectHtml = `
+    <select id="status-selection">
+      ${statusOptions.map(opt => `
+        <option value="${opt.value}" ${opt.value === selectedStatus ? 'selected' : ''}>
+          ${opt.label}
+        </option>
+      `).join('')}
+    </select>
+  `;
+
+  const criticalitySelectHtml = `
+    <select id="criticality-selection">
+      ${criticalityOptions.map(opt => `
+        <option value="${opt.value}" ${opt.value === selectedCriticality ? 'selected' : ''}>
+          ${opt.label}
+        </option>
+      `).join('')}
+    </select>
+  `;
+
+  const htmlHeader = getHtmlHeader(webview, localPath, 'Matched Patterns / Rules');
+
   return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src ${webview.cspSource};">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src ${webview.cspSource}; img-src ${webview.cspSource};">
   <link rel="stylesheet" type="text/css" href=${webview.asWebviewUri(stylesheetPath)} />
-  <title>SAH Matches</title>
+  <title>Static Analysis Hero</title>
 <head>
 <body>
-  <h2>Matched Patterns: </h2>
-  <select id="status-selection">
-    <option value="unprocessed">Unprocessed</options>
-    <option value="finding">Finding</options>
-    <option value="falsePositive">False positive</options>
-    <option value="saveForLater">Save for later</options>
-    <option value="all">All</options>
-  </select>
-  <select id="criticality-selection">
-    <option value="0">All Criticalities</options>
-    <option value="1">INFO</options>
-    <option value="2">LOW</options>
-    <option value="3">MEDIUM</options>
-    <option value="4">HIGH</options>
-    <option value="5">CRITICAL</options>
-    <option value="6">Ascending Order</options>
-    <option value="7">Descending Order</options>
-  </select>
+  ${htmlHeader}
+  ${statusSelectHtml}
+  ${criticalitySelectHtml}
   <select id="rules-selection">
     ${ruleSelectionHTML}
   </select>
   <button id="file-view">Show file Selection</button>
   <button id="jmp-to-semgrep">Switch to Scan View</button>
-  <div class="pagination">
-    <span>Total Matches: ${totalMatches} | Page ${currentPage} of ${totalPages}</span>
-    
-    <button id="first-page" data-page="1" ${currentPage === 1 ? 'disabled' : ''}>⇤ First</button>
-    <button id="prev-page" data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}>← Prev</button>
 
-    <span class="page-info">Page ${currentPage} / ${totalPages}</span>
-
-    <button id="next-page" data-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''}>Next →</button>
-    <button id="last-page" data-page="${totalPages}" ${currentPage === totalPages ? 'disabled' : ''}>Last ⇥</button>
-  </div>
+  ${paginationPanel}<br>
 
   <div id="matches">
     ${matchesString}
@@ -331,17 +348,9 @@ const generateMatchesWebview = (
     <button id="btn-save-later">Save for Later</button>
     <button id="btn-unselect-all">Unselect All</button>
   </div>
-  <div class="pagination">
-    <span>Total Matches: ${totalMatches} | Page ${currentPage} of ${totalPages}</span>
-    
-    <button id="first-page" data-page="1" ${currentPage === 1 ? 'disabled' : ''}>⇤ First</button>
-    <button id="prev-page" data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}>← Prev</button>
 
-    <span class="page-info">Page ${currentPage} / ${totalPages}</span>
+  ${paginationPanel}
 
-    <button id="next-page" data-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''}>Next →</button>
-    <button id="last-page" data-page="${totalPages}" ${currentPage === totalPages ? 'disabled' : ''}>Last ⇥</button>
-  </div>
   <script src=${webview.asWebviewUri(scriptPath)}></script>
 </body>
 </html>`;

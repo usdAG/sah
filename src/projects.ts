@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as vscode from 'vscode';
 import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 import { allMatches, Match, updateAllMatches } from './matches';
 import { logger } from './logging';
 
@@ -18,6 +20,7 @@ export const saveProject = () => {
       matches: allMatchesParsed
     };
     fs.writeFileSync(currentProject, JSON.stringify(finalJSON, null, 2));
+    logger.debug("Project saved to disk");
     // vscode.window.showInformationMessage("Project Saved")
   } else {
     displayNoProjectWarning()
@@ -26,7 +29,9 @@ export const saveProject = () => {
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export const newProject = (callback: Function) => {
-  vscode.window.showSaveDialog({ saveLabel: 'Save', filters: { JSON: ['json'] } }).then((uri) => {
+  const homedir = vscode.Uri.file(os.homedir());
+
+  vscode.window.showSaveDialog({ saveLabel: 'Save', defaultUri: homedir, filters: { JSON: ['json'] } }).then((uri) => {
     if (!uri) {
       vscode.window.showErrorMessage('Please select a file location to save the project');
       return;
@@ -52,7 +57,8 @@ export const newProject = (callback: Function) => {
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export const loadProject = (callback: Function) => {
   logger.debug("loadProject")
-  vscode.window.showOpenDialog({ openLabel: 'Load', filters: { JSON: ['json'] } }).then((uri) => {
+  const homedir = vscode.Uri.file(os.homedir());
+  vscode.window.showOpenDialog({ openLabel: 'Load', defaultUri: homedir, filters: { JSON: ['json'] } }).then((uri) => {
     if (uri !== undefined && uri.length === 1) {
       fs.readFile(uri[0].fsPath, (err, data) => {
         if (err) { throw err; }
@@ -70,13 +76,27 @@ export const displayNoProjectWarning = () => {
     const warningMsg = 'No project selected! Your changes will not be saved. Please create a new project or load an existing one in order to save your changes.';
     vscode.window.showWarningMessage(
       warningMsg,
-      'Create New Project',
-      'OK'
+      'Create Project',
+      'Load Project'
     ).then(selection => {
-       if (selection === 'Create New Project') {
+      if (selection === 'Create Project') {
         // set a callback
         newProject(() => {});
+      } else if (selection === "Load Project") {
+        loadProject(() => {
+          vscode.commands.executeCommand('extension.showMatchesList');
+        });
       }
     });
   }
 };
+
+export function getDefaultPath(): vscode.Uri {
+  // Return folder in which currentProject config is stored, if set
+  const defaultFolder = path.dirname(currentProject) || os.homedir();
+  return vscode.Uri.file(defaultFolder);
+}
+
+export function getCurrentProject(): string {
+  return currentProject ?? "";
+}

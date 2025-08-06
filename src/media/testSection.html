@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
     <meta charset='UTF-8'>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src {{cspSource}}; script-src {{cspSource}};">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src {{cspSource}}; script-src {{cspSource}}; img-src {{cspSource}};">
     <link rel="stylesheet" type="text/css" href="{{testSectionCssUri}}" />
     
      <!-- Matches list styles -->
@@ -12,10 +12,10 @@
   
 </head>
 <body>
+  {{htmlheader}}
   <div class="container">
     <!-- Start Semgrep Scan -->
     <div class="form-group">
-      <h3>Test your Semgrep Rules</h3>
 
       <!-- Config Path -->
       <label for="configPath">

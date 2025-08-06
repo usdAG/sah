@@ -13,7 +13,7 @@ import {
 import {
   newProject, loadProject, saveProject, displayNoProjectWarning,
 } from './projects';
-import generateStartWebview from './startWebview';
+// import generateStartWebview from './startWebview';
 import generateSemgrepWebview from './semgrepWebview';
 import {
   isRelative,  handlePathSelection, handleOutputPathSelection,
@@ -118,8 +118,8 @@ export const activate = (context: vscode.ExtensionContext) => {
     }),
     vscode.commands.registerCommand("extension.newProject", () => {
       const callback = () => {
-        // set HTML content
-        activePanel().webview.html = generateStartWebview(activePanel().webview, localPath);
+        //activePanel().webview.html = generateStartWebview(activePanel().webview, localPath);
+        activePanel().webview.html = generateSemgrepWebview(activePanel().webview, localPath);
       };
       newProject(callback);
     }),
@@ -146,9 +146,8 @@ export const activate = (context: vscode.ExtensionContext) => {
       updateAllMatches(newMatches)
       vscode.commands.executeCommand('extension.showMatchesList');
     }),
-    // https://stackoverflow.com/questions/70074231/in-a-vs-code-extension-open-the-markdown-preview-of-the-readme-md-of-the-extens
     vscode.commands.registerCommand("extension.showHelp", () => {
-      const readmePath = path.join(context.extensionPath, "readme.md"); //context.asAbsolutePath("README.md");
+      const readmePath = path.join(context.extensionPath, "readme.md");
       logger.debug("Open readme from location: " + readmePath);
       vscode.commands.executeCommand("markdown.showPreview", vscode.Uri.file(readmePath));
     })
@@ -174,8 +173,8 @@ export const activate = (context: vscode.ExtensionContext) => {
 
     // initialize webview panel
     panel = vscode.window.createWebviewPanel(
-      'sah', // type of webview
-      'SAH', // title of panel
+      'sah',
+      'Static Analysis Hero (SAH)',
       vscode.ViewColumn.Beside,
       {
         enableScripts: true,
@@ -223,9 +222,9 @@ export const activate = (context: vscode.ExtensionContext) => {
       importMatchesTestSection   : hImportMatchesTestSection,
     };
 
-    const post            = (msg: any) => panel.webview.postMessage(msg);
-    const cmd             = (c: string) => vscode.commands.executeCommand(c);
-    const log             = (...a: any[]) => logger.debug('[msg]', ...a);
+    const post = (msg: any) => panel.webview.postMessage(msg);
+    const cmd = (c: string) => vscode.commands.executeCommand(c);
+    const log = (...a: any[]) => logger.debug('[msg]', ...a);
     const showMatchesList = () => cmd('extension.showMatchesList');
 
     function hJump(message:any){ 
@@ -341,7 +340,7 @@ export const activate = (context: vscode.ExtensionContext) => {
       finalImportSemgrepJson(isTest);
       return;
     }
-      vscode.window.showInformationMessage("There is currently now data to import!");
+      vscode.window.showInformationMessage("There is currently no data to import!");
     }
     // listen for messages from the webview
     // this now calles the function based on the command set in the handlers

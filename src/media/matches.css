@@ -111,6 +111,18 @@ button:hover {
   padding-top: 0.5em;
 }
 
+.no-match-container {
+  margin: 0;
+  background-color: var(--vscode-editorWidget-background);
+  border: 1px solid var(--vscode-editorWidget-border);
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  color: var(--vscode-editor-foreground);
+  overflow: hidden;
+  padding: 1em 2em;
+  font-size: large;
+}
+
 /* hide the real checkbox*/
 .match-toggle {
   cursor: pointer;
@@ -337,14 +349,12 @@ button:hover {
 
 /* absolutely pin any toggle button inside the cell */
 .desc-cell .desc-toggle-btn {
-  position: absolute;
-  top: 0.5em;             /* small gap from the top edge */
-  right: 0.5em;            /* same gap from right edge */
-  transform: none;         /* no vertical centering */
+  float: right;
+  margin: 0 0 0.5em 0.5em;
 
   background: transparent;
   border: none;
-  color: var(--vscode-button-foreground);
+  color: var(--vscode-textLink-foreground);
   cursor: pointer;
   font-size: 0.9em;
   padding: 2px 4px;
@@ -353,8 +363,7 @@ button:hover {
   transition: border-color 0.2s ease-in-out, box-shadow 0.2s;
 }
 .desc-cell .desc-toggle-btn:hover {
-  border-color: var(--vscode-focusBorder);
-  box-shadow: 0 0 5px var(--vscode-focusBorder);
+  color: var(--vscode-textLink-activeForeground);
 }
 
 /* multiselect action bar*/
