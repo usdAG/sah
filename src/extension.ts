@@ -146,9 +146,8 @@ export const activate = (context: vscode.ExtensionContext) => {
       updateAllMatches(newMatches)
       vscode.commands.executeCommand('extension.showMatchesList');
     }),
-    // https://stackoverflow.com/questions/70074231/in-a-vs-code-extension-open-the-markdown-preview-of-the-readme-md-of-the-extens
     vscode.commands.registerCommand("extension.showHelp", () => {
-      const readmePath = path.join(context.extensionPath, "README.md");
+      const readmePath = path.join(context.extensionPath, "readme.md");
       logger.debug("Open readme from location: " + readmePath);
       vscode.commands.executeCommand("markdown.showPreview", vscode.Uri.file(readmePath));
     })
