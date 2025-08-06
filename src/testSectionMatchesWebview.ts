@@ -5,6 +5,7 @@ import { Pattern } from './patterns';
 import { logger } from './logging';
 import { sanitizeContent } from './matchesWebview';
 import * as fs from 'fs';
+import { getHtmlHeader } from './webHelpers';
 
 
 export let allMatchesTestSection: Array<Match> = [];
@@ -124,6 +125,8 @@ export function generateTestSectionMatchesWebview(
       <button data-page="${totalPages}" ${currentPage === totalPages ? 'disabled' : ''}>Last ⇥</button>
     </div>`;
 
+  const htmlHeader = getHtmlHeader(webview, extensionRoot, 'Test Semgrep Rules');
+
   html = html
     .replace(/{{cspSource}}/g, csp)
     .replace(/{{testSectionCssUri}}/g, testSectionCssUri.toString())
@@ -131,6 +134,8 @@ export function generateTestSectionMatchesWebview(
     .replace(/{{testSectionJsUri}}/g, testSectionJsUri.toString())
     .replace(/{{matches}}/g, matchesHtml)
     .replace(/{{paginationTop}}/g, buildPagination())
-    .replace(/{{paginationBottom}}/g, buildPagination());
+    .replace(/{{paginationBottom}}/g, buildPagination())
+    .replace(/{{htmlheader}}/g, htmlHeader);
+
   return html;
 }
