@@ -281,7 +281,7 @@ const generateMatchesWebview = (
     path.join(localPath, 'src', 'media', 'matches.js'),
   );
 
-  const paginationPanel = `
+  const paginationPanel = totalMatches > 0 ? `
     <div class="pagination">
       <span>Total Matches: ${totalMatches} | Page ${currentPage} of ${totalPages}</span>
 
@@ -293,7 +293,7 @@ const generateMatchesWebview = (
       <button id="next-page" data-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''}>Next →</button>
       <button id="last-page" data-page="${totalPages}" ${currentPage === totalPages ? 'disabled' : ''}>Last ⇥</button>
     </div>
-  `
+  ` : "<br>";
 
   const statusSelectHtml = `
     <select id="status-selection">
