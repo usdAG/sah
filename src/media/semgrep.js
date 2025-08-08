@@ -119,12 +119,10 @@ window.addEventListener('message', (event) => {
     scanStatus.innerHTML = `❌ ${message.errorMessage}`;
   }
   if (message.command === 'updateTime') {
-    scanStatus.style.color = 'white';
     scanStatus.innerHTML = `⏳ Scanning in progress...${message.data}`;
   }
   if (message.command === 'scanStart') {
     scanStatus.classList.add('show');
-    scanStatus.style.color = 'white';
     scanStatus.innerHTML = '⏳ Scanning in progress...';
   }
 });

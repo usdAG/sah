@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { logger } from './logging';
-import { addSemgrepMatch } from './matches';
+import { addSemgrepMatch, updateAllMatches, allMatches } from './matches';
 import { Pattern } from './patterns';
 import { saveProject } from './projects';
 import { jsonData } from './semgrep';
@@ -25,7 +25,7 @@ export async function startImportSemgrepJson(panel: vscode.WebviewPanel, file_pa
         logger.error("Unable to parse SemgrepContnent: ", error)
         vscode.window.showErrorMessage(`Invalid JSON file at : ${path}`);
         return;
-    }   
+    }
     logger.debug(`Importing: ${jsonData.data.results.length} Matches` )
     if (jsonData.data.results && Array.isArray(jsonData.data.results)) {
       for (const result of jsonData.data.results) {
@@ -115,13 +115,18 @@ export async function finalImportSemgrepJson(isTest: boolean){
           importedMatches += 1;
         }
       };
-    } else{
+    } else {
       vscode.window.showInformationMessage("The scan seems to be empty, no matches imported");
     }
-    if(!isTest) saveProject();
-    if(!isTest) vscode.window.showInformationMessage(`Imported ${importedMatches} semgrep matches.`)
-    if(!isTest) vscode.commands.executeCommand('extension.showMatchesList');
-    if (isTest) vscode.commands.executeCommand('extension.showMatchesTestSection');
+    if(!isTest) {
+      saveProject();
+      updateAllMatches(allMatches); // required to update file explorer
+      vscode.window.showInformationMessage(`Imported ${importedMatches} semgrep matches.`);
+      vscode.commands.executeCommand('extension.showMatchesList');
+    } else {
+      vscode.commands.executeCommand('extension.showMatchesTestSection');
+    }
+
   } catch (error) {
       vscode.window.showErrorMessage(`An error occurred loading the scan (finalImportSemgrep): ${error} `);
   }

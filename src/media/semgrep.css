@@ -97,13 +97,13 @@ small {
 #scanStatus {
   display: none;
   visibility: hidden;
-  color: blue;
   margin-top: 10px;
 }
 
 #scanStatus.show {
   display: block;
   visibility: visible;
+  color: var(--vscode-foreground);
 }
 
 #startSemgrepScan {
