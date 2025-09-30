@@ -145,7 +145,7 @@
 			},
 			{
 				"command": "workspace.createFindingFromSelection",
-				"title": "SAH: Create Finding from Selection"
+				"title": "SAH: Create Match from Selection"
 			}			
 		],
 		"keybindings": [],
