@@ -1,0 +1,25 @@
+ <!DOCTYPE html>
+    <html lang="en">
+    <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src {{cspSource}}; script-src {{cspSource}}; img-src {{cspSource}};">
+    <link rel="stylesheet" type="text/css" href={{stylesheetUri}} />
+    <title>Static Analysis Hero</title>
+    </head>
+    <body>
+        {{htmlHeader}} 
+
+        <label for="proof">Proof:</label>
+        <textarea readonly="true" id="proof">{{selectedCodeSnippet}}</textarea>
+        <label for="description">Description:</label>
+        <input type=text id="description" value="">
+        {{criticalitySelectHtml}}
+        <label for="category">Category:</label>
+        <input type=text id="category" value="manual">
+        <input type=hidden id="proofPath" value="{{proofPath}}">
+        <input type=hidden id="proofStartLine" value="{{proofStartLine}}">
+        <button id="add-finding" onclick="createFinding()">Add Finding</button>
+
+        <script src={{scriptUri}}></script>
+    </body>
+    </html>

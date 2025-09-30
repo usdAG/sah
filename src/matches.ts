@@ -184,6 +184,32 @@ export const addSemgrepMatch = (startLine: number, proof: string, path: string, 
   allMatches.push(newMatch);
 };
 
+export const addManualMatch = (startLine: number, proof: string, path: string, description: string, category: string, criticality: string) => {
+  logger.debug("Add manual match")
+  matchIdCounter += 1;
+
+  //TODO create pattern
+  const pattern : Pattern = {
+      id: "manual",
+      description: description,
+      criticality: criticality,
+      pattern: category,
+      lang: "manual"
+  };
+
+  const newMatch: Match = {
+    pattern: pattern,
+    path: path,
+    lineNumber: startLine,
+    lineContent: proof,
+    matchId: matchIdCounter,
+    status: "unprocessed",
+    detectionType : "manual",
+    selected: false
+  };
+  allMatches.push(newMatch);
+};
+
 
 export async function addComment(comment: string, matchId: number){
   logger.debug("Adding Comment:", comment, matchId);

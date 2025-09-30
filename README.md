@@ -9,21 +9,25 @@ SAH is used while having the project to review open in VSCode. Open the command 
 Results in this plugin are organized as *Matches*. A match is a possible security vulnerability, based on a list of regular expressions or semgrep / opengrep rule. Upon manual inspection, matches can be categorized as findings or false positives.
 
 ### Table of Contents
-- [Installation](#installation)
-- [Usage](#usage)
-  - [Working with Projects](#working-with-projects)
-    - [New Project](#new-project)
-    - [Load Project](#load-project)
-  - [Scan For Potential Findings](#scan-for-potential-findings)
-    - [Scan Code](#scan-code)
-    - [Import Semgrep / Opengrep Scan](#import-semgrep--opengrep-scan)
-    - [Scanning Sandbox](#scanning-sandbox)
-  - [Review Matches](#review-matches)
-    - [Blacklist Files And Directories](#blacklist-files-and-directories)
-- [Command Palette](#command-palette)
-- [Contribution & Dev Setup](#contribution--dev-setup)
-  - [Development Setup](#development-setup)
-  - [Debugging in VSCode](#debugging-in-vscode)
+- [Static Analysis Hero (SAH)](#static-analysis-hero-sah)
+  - [Introduction](#introduction)
+    - [Table of Contents](#table-of-contents)
+  - [Installation](#installation)
+  - [Usage](#usage)
+    - [Working with Projects](#working-with-projects)
+      - [New Project](#new-project)
+      - [Load Project](#load-project)
+    - [Scan For Potential Findings](#scan-for-potential-findings)
+      - [Scan Code](#scan-code)
+      - [Import Semgrep / Opengrep Scan](#import-semgrep--opengrep-scan)
+      - [Scanning Sandbox](#scanning-sandbox)
+    - [Review Matches](#review-matches)
+      - [Blacklist Files And Directories](#blacklist-files-and-directories)
+      - [Create Matches Manually](#create-matches-manually)
+  - [Command Palette](#command-palette)
+  - [Contribution \& Dev Setup](#contribution--dev-setup)
+    - [Development Setup](#development-setup)
+    - [Debugging in VSCode](#debugging-in-vscode)
 
 
 ## Installation
@@ -113,6 +117,12 @@ Finally, SAH provides an additional *File Explorer* in the bottom left panel tha
 
 You may not want to search every single file or directory in the project. In this case, create a file in your project folder called '`.semgrepignore`'. This file should contain names of all the files and directories that you want to be excluded from the code scan. 
 In lieu of a `.semgrepignore` file, a default blacklist is used containing some commonly blacklisted files and directories (`node_modules`, `package-lock.json`, etc.)
+
+#### Create Matches Manually
+
+Sometimes it might be benefical to create a match without an associated rule or scan. This can be achieved by selecting the code-snippet you wish to highlight in the current editor and selecting `SAH: Create Match from Selection` from the right-click context menu. 
+
+This opens a wizard webview that guides you through creating a manual match. After adding to an active project the match is available in the matches Overview.
 
 ## Command Palette
 

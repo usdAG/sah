@@ -6,7 +6,7 @@ import generateMatchesWebview, {
 } from './matchesWebview';
 import { setCriticality } from './matchesWebview';
 import {
-  addComment, allMatches, clearAllToggledMatches, deduplicateMatches,
+  addComment, addManualMatch, allMatches, clearAllToggledMatches, deduplicateMatches,
   jumpToCode, setBatchAction, setStatusAs, toggledMatchIds, updateAllMatches,
   updateToggleState
 } from './matches';
@@ -24,6 +24,7 @@ import { logger } from './logging';
 import { startSemgrepScan } from './semgrepRunner';
 import { finalImportSemgrepJson, startImportSemgrepJson } from './semgrepImporter';
 import { allMatchesTestSection, generateTestSectionMatchesWebview } from './testSectionMatchesWebview';
+import { generateFindingCreationWebiew } from "./manualMatchWebview";
 
 export let fileExplorerProvider: FileExplorerProvider;
 
@@ -150,6 +151,24 @@ export const activate = (context: vscode.ExtensionContext) => {
       const readmePath = path.join(context.extensionPath, "readme.md");
       logger.debug("Open readme from location: " + readmePath);
       vscode.commands.executeCommand("markdown.showPreview", vscode.Uri.file(readmePath));
+    }),
+    vscode.commands.registerCommand("workspace.createFindingFromSelection", () => {
+      displayNoProjectWarning();
+      const activeEditor = vscode.window.activeTextEditor;
+      const path = activeEditor?.document.uri.fsPath ? activeEditor?.document.uri.fsPath : ""; 
+      const selection = activeEditor?.selection;
+      if(selection?.isEmpty || selection == undefined){
+        logger.debug("Selection is empty. Exiting.");
+        return;
+      }
+      const range = new vscode.Range(
+        new vscode.Position(selection.start.line, selection.start.character),
+        new vscode.Position(selection.end.line, selection.end.character));
+      const selectedText = activeEditor?.document.getText(range);
+      logger.debug(`Selected Text in Editor: ${selectedText}`);
+      if(selectedText == undefined || selectedText.trim().length < 1) return;
+      const html = generateFindingCreationWebiew(activePanel().webview, localPath, selectedText, path, selection.start.line);
+      activePanel().webview.html = html;
     })
   )
 
@@ -220,6 +239,7 @@ export const activate = (context: vscode.ExtensionContext) => {
       clearAllSelcted            : hClearAllSelected,
       createSplitView            : hCreateSplitView,
       importMatchesTestSection   : hImportMatchesTestSection,
+      createFindingObject        : hCreateFindingObject,
     };
 
     const post = (msg: any) => panel.webview.postMessage(msg);
@@ -341,6 +361,10 @@ export const activate = (context: vscode.ExtensionContext) => {
       return;
     }
       vscode.window.showInformationMessage("There is currently no data to import!");
+    }
+    function hCreateFindingObject(message: any){      
+      addManualMatch(message.data.proofStartLine, message.data.proof, message.data.proofPath, message.data.description, message.data.category, message.data.criticality);
+      saveProject();
     }
     // listen for messages from the webview
     // this now calles the function based on the command set in the handlers

@@ -142,7 +142,11 @@
 			{
 				"command": "extension.showMatchesTestSection",
 				"title": "SAH: Scanning Sandbox"
-			}
+			},
+			{
+				"command": "workspace.createFindingFromSelection",
+				"title": "SAH: Create Finding from Selection"
+			}			
 		],
 		"keybindings": [],
 		"menus": {
@@ -213,6 +217,10 @@
 				},
 				{
 					"command": "fileExplorer.refresh",
+					"when": "false"
+				}, 
+				{
+					"command": "workspace.createFindingFromSelection",
 					"when": "false"
 				}
 			],
@@ -289,6 +297,13 @@
 				{
 					"command": "fileExplorer.resetExclusion",
 					"group": "SAH@4"
+				}
+			], 
+			"editor/context": [
+				{
+					"command": "workspace.createFindingFromSelection",
+					"group": "sah-workspace",
+					"when": "editor.hasSelection"
 				}
 			]
 		},
