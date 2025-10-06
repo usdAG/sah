@@ -292,7 +292,7 @@ async function importJsonFromOutputPath(outputFile: string) {
     outputFile = workspaceFolder + "/" + outputFile;
   }
   if (!fs.existsSync(outputFile)) {
-    vscode.window.showErrorMessage(`absoluteOutputFile not found: ${outputFile}`);
+    vscode.window.showErrorMessage(`Could not import semgrep scan output from following location: ${outputFile}. File not found.`);
     return;
   }
 
