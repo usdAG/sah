@@ -4,7 +4,7 @@ import * as path from 'path';
 import generateMatchesWebview, {
   excludedPath, setRule, setStatus
 } from './matchesWebview';
-import { setCriticality } from './matchesWebview';
+import { setCriticality, currentlyVisibleMatches } from './matchesWebview';
 import {
   addComment, addManualMatch, allMatches, clearAllToggledMatches, deduplicateMatches,
   jumpToCode, setBatchAction, setStatusAs, toggledMatchIds, updateAllMatches,
@@ -237,6 +237,7 @@ export const activate = (context: vscode.ExtensionContext) => {
       getToggledMatches          : hGetToggledMatches,
       batchAction                : hBatchAction,
       clearAllSelcted            : hClearAllSelected,
+      selectAll                  : hSelectAll,
       createSplitView            : hCreateSplitView,
       importMatchesTestSection   : hImportMatchesTestSection,
       createFindingObject        : hCreateFindingObject,
@@ -339,6 +340,11 @@ export const activate = (context: vscode.ExtensionContext) => {
     }
     function hClearAllSelected(){
       clearAllToggledMatches();
+    }
+    function hSelectAll(){
+      currentlyVisibleMatches.forEach((e) => {
+        e.selected = true;
+      });
     }
     async function hCreateSplitView(message: any){
       const document = await vscode.workspace.openTextDocument(vscode.Uri.file(message.filePath));

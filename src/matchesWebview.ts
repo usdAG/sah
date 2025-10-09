@@ -16,6 +16,8 @@ let selectedStatus = "all" // "unprocessed"
 let selectedCriticality = "0";
 let selectedRule = "all";
 export let excludedPath: string[] = [];
+//List of all matches currently not excluded by a filter
+export let currentlyVisibleMatches: Match[] = [];
 
 // 3 functions to apply the filters 
 // --> update from right to left if something changes
@@ -30,7 +32,6 @@ export const setStatus = (newStatus: string, panel: vscode.WebviewPanel) => {
     }
   });
 };
-
 
 export const setCriticality = (newCriticality: string, panel: vscode.WebviewPanel) => {
   selectedCriticality = newCriticality;
@@ -147,6 +148,7 @@ const generateMatchesWebview = (
   _matches = applyRuleFilter(_matches)  
   _matches = applyExlusionFilter(_matches)
   _matches = orderMatchesByCriticality(_matches)
+  currentlyVisibleMatches = _matches;
 
   logger.debug("Generating HTML with matches")
 
@@ -347,6 +349,7 @@ const generateMatchesWebview = (
     <button id="btn-false-positive">Mark as False Positive</button>
     <button id="btn-save-later">Save for Later</button>
     <button id="btn-unselect-all">Unselect All</button>
+    <button id="btn-select-all">Select All</button>
   </div>
 
   ${paginationPanel}

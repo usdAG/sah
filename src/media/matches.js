@@ -224,6 +224,14 @@ document.getElementById('btn-unselect-all')
     });
   });
 
+document.getElementById('btn-select-all')
+  .addEventListener('click', ()=>{
+    vscode.postMessage({ command: 'selectAll' });
+     document.querySelectorAll('.match-toggle').forEach(cb => {
+      cb.checked = true;
+    });
+  });
+
 // Initialize visibility on load
 vscode.postMessage({
   command: "getToggledMatches"
