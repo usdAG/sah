@@ -103,6 +103,7 @@ jmpToSemgrepBtn.addEventListener('click', () => {
 document.querySelectorAll(".pagination button").forEach(button => {
   button.addEventListener("click", () => {
     const page = button.getAttribute("data-page");
+    window.scrollTo(0,0);
     vscode.postMessage({ command: "changePage", page: parseInt(page) });
   });
 });
