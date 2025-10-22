@@ -53,6 +53,26 @@ button:hover {
   transition: border-color 0.2s ease-in-out, box-shadow 0.2s;
 }
 
+/* icon-btn */
+.icon-bar .falsePositive-btn-active,
+.icon-bar .saveForLater-btn-active {
+  margin: 0;              
+  font-size: 1.5em;       /* size of icons */
+  padding: 0.1em;         /* add a click area */
+  line-height: 1;   
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s;
+  background-color: var(--vscode-button-hoverBackground);   
+}
+
+.icon-bar .finding-btn-active {
+  margin: 0;
+  font-size: 1.7em;
+  padding: 0.1em;
+  line-height: 1;   
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s;
+  background-color: var(--vscode-button-hoverBackground);      
+}
+
 .icon-bar .finding-btn {
   margin: 0;
   font-size: 1.7em;

@@ -212,9 +212,9 @@ const generateMatchesWebview = (
           </div>
           <div class="icon-bar">
             <div class="jump-to-code-btn"   data-match="${m.matchId}" title="Jump to code">&#8631;</div>
-            <div class="finding-btn"        data-match="${m.matchId}" title="Finding">&#8982;</div>
-            <div class="falsePositive-btn"  data-match="${m.matchId}" title="False Positive">&#10006;</div>
-            <div class="saveForLater-btn"   data-match="${m.matchId}" title="Save for later">&#x1F570;</div>
+            <div class="${m.status === "finding" ? "finding-btn-active" : "finding-btn"}"        data-match="${m.matchId}" title="Finding">&#8982;</div>
+            <div class="${m.status === "falsePositive" ? "falsePositive-btn-active" : "falsePositive-btn"}"  data-match="${m.matchId}" title="False Positive">&#10006;</div>
+            <div class="${m.status === "saveForLater" ? "saveForLater-btn-active" : "saveForLater-btn"}"   data-match="${m.matchId}" title="Save for later">&#x1F570;</div>
           </div>
           <p>
             <div class="code-line">
