@@ -314,7 +314,34 @@
 					"name": "File Explorer"
 				}
 			]
-		}
+		},
+		"colors": [
+			{
+				"id": "sah.criticalityInfo",
+				"description": "Badge color for INFO criticality SAH matches",
+				"defaults": { "dark": "#4da6ff", "light": "#0066cc", "highContrast": "#4da6ff", "highContrastLight": "#0055bb" }
+			},
+			{
+				"id": "sah.criticalityLow",
+				"description": "Badge color for LOW criticality SAH matches",
+				"defaults": { "dark": "#ddcc00", "light": "#887700", "highContrast": "#ddcc00", "highContrastLight": "#776600" }
+			},
+			{
+				"id": "sah.criticalityMedium",
+				"description": "Badge color for MEDIUM criticality SAH matches",
+				"defaults": { "dark": "#ff8c00", "light": "#cc5500", "highContrast": "#ff8c00", "highContrastLight": "#bb4400" }
+			},
+			{
+				"id": "sah.criticalityHigh",
+				"description": "Badge color for HIGH criticality SAH matches",
+				"defaults": { "dark": "#e05050", "light": "#cc2222", "highContrast": "#ff6060", "highContrastLight": "#cc0000" }
+			},
+			{
+				"id": "sah.criticalityCritical",
+				"description": "Badge color for CRITICAL criticality SAH matches",
+				"defaults": { "dark": "#ff2222", "light": "#bb0000", "highContrast": "#ff4444", "highContrastLight": "#aa0000" }
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "webpack --mode production",

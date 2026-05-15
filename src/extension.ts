@@ -6,9 +6,9 @@ import generateMatchesWebview, {
 } from './matchesWebview';
 import { setCriticality, currentlyVisibleMatches } from './matchesWebview';
 import {
-  addComment, addManualMatch, allMatches, clearAllToggledMatches, deduplicateMatches,
-  jumpToCode, setBatchAction, setOnMatchesChangedCallback, setStatusAs, toggledMatchIds,
-  updateAllMatches, updateToggleState
+  addComment, addManualMatch, allMatches, buildBadgeMaps, clearAllToggledMatches,
+  deduplicateMatches, jumpToCode, setBatchAction, setOnMatchesChangedCallback, setStatusAs,
+  toggledMatchIds, updateAllMatches, updateToggleState
 } from './matches';
 import {
   newProject, loadProject, saveProject, displayNoProjectWarning,
@@ -19,7 +19,7 @@ import {
   isRelative,  handlePathSelection, handleOutputPathSelection,
   jsonData
 } from './semgrep';
-import { FileExplorerProvider, FileNode } from './fileView';
+import { FileExplorerProvider, FileNode, MatchBadgeProvider } from './fileView';
 import { logger } from './logging';
 import { startSemgrepScan } from './semgrepRunner';
 import { finalImportSemgrepJson, startImportSemgrepJson } from './semgrepImporter';
@@ -37,14 +37,24 @@ export const activate = (context: vscode.ExtensionContext) => {
   let active = false;
   fileExplorerProvider = new FileExplorerProvider(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? "");
 
-  setOnMatchesChangedCallback(refreshAllOpenEditorDecorations);
+  const matchBadgeProvider = new MatchBadgeProvider();
+  const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? '';
+
+  const refreshAllDecorations = () => {
+    refreshAllOpenEditorDecorations();
+    const { countMap, critMap } = buildBadgeMaps(allMatches, workspaceRoot);
+    matchBadgeProvider.update(countMap, critMap);
+  };
+
+  setOnMatchesChangedCallback(refreshAllDecorations);
   context.subscriptions.push(
+    vscode.window.registerFileDecorationProvider(matchBadgeProvider),
     vscode.window.onDidChangeActiveTextEditor(editor => {
       if (editor) { applyMatchDecorations(editor); }
     }),
     { dispose: disposeDecorations },
   );
-  refreshAllOpenEditorDecorations();
+  refreshAllDecorations();
 
   /*
   Register a Tree View

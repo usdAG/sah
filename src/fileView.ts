@@ -38,15 +38,11 @@ export class FileExplorerProvider implements vscode.TreeDataProvider<FileNode> {
   }
 
   getTreeItem(element: FileNode): vscode.TreeItem {
-    const findings = this.findingsMap.get(element.filePath) ?? 0;
-    // logger.debug(`FilePath: ${element.filePath}, findings: ${findings}`);
-
     if (this.excludedPaths.has(element.filePath)) {
       element.description = " (excluded)";
       element.contextValue = "excluded";
     } else {
-      const findingsText = findings > 0 ? ` (${findings} finding${findings > 1 ? 's' : ''})` : '';
-      element.description = findingsText;
+      element.description = undefined;
       element.contextValue = element.collapsibleState === vscode.TreeItemCollapsibleState.None
         ? "file"
         : "folder";
@@ -208,7 +204,41 @@ export class FileNode extends vscode.TreeItem {
     super(label, collapsibleState);
     this.tooltip = filePath;
     this.isExcluded = isExcluded;
-    // Initially set contextValue based on whether the node is a file or folder.
+    this.resourceUri = vscode.Uri.file(filePath);
     this.contextValue = collapsibleState === vscode.TreeItemCollapsibleState.None ? "file" : "folder";
+  }
+}
+
+const _critColorIds: Record<string, string> = {
+  'INFO':     'sah.criticalityInfo',
+  'LOW':      'sah.criticalityLow',
+  'MEDIUM':   'sah.criticalityMedium',
+  'HIGH':     'sah.criticalityHigh',
+  'CRITICAL': 'sah.criticalityCritical',
+};
+
+export class MatchBadgeProvider implements vscode.FileDecorationProvider {
+  private _onDidChange = new vscode.EventEmitter<undefined>();
+  readonly onDidChangeFileDecorations = this._onDidChange.event;
+
+  private countMap = new Map<string, number>();
+  private critMap  = new Map<string, string>();
+
+  update(countMap: Map<string, number>, critMap: Map<string, string>): void {
+    this.countMap = countMap;
+    this.critMap  = critMap;
+    this._onDidChange.fire(undefined);
+  }
+
+  provideFileDecoration(uri: vscode.Uri): vscode.FileDecoration | undefined {
+    const count = this.countMap.get(uri.fsPath);
+    if (!count) { return undefined; }
+    const crit  = this.critMap.get(uri.fsPath) ?? 'INFO';
+    const colorId = _critColorIds[crit] ?? _critColorIds['INFO'];
+    return {
+      badge:   count > 99 ? '!!' : String(count),
+      color:   new vscode.ThemeColor(colorId),
+      tooltip: `${count} SAH match${count !== 1 ? 'es' : ''} · ${crit}`,
+    };
   }
 }

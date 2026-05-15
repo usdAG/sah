@@ -1,15 +1,5 @@
 import * as vscode from 'vscode';
-import { allMatches } from './matches';
-
-// Semgrep imports store criticality as text ("INFO"…"CRITICAL").
-// Manual matches store them as numeric strings ("1"…"5").
-// Normalise both to the canonical text form.
-const numericToLabel: Record<string, string> = {
-  '1': 'INFO', '2': 'LOW', '3': 'MEDIUM', '4': 'HIGH', '5': 'CRITICAL',
-};
-function normalizeCriticality(raw: string): string {
-  return numericToLabel[raw] ?? raw;
-}
+import { allMatches, normalizeCriticality } from './matches';
 
 const criticalityColors: Record<string, { bg: string; ruler: string }> = {
   'INFO':     { bg: 'rgba(0, 120, 255, 0.15)',  ruler: 'rgba(0, 120, 255, 0.6)'  },
