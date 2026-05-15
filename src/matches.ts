@@ -39,6 +39,11 @@ export let allMatches: Array<Match> = [];
 export const toggledMatchIds: Set<number> = new Set<number>();
 let matchIdCounter = 0;
 
+let onMatchesChangedCallback: (() => void) | undefined;
+export function setOnMatchesChangedCallback(cb: () => void): void {
+  onMatchesChangedCallback = cb;
+}
+
 
 // finds and returns match from allMatches where matchId === id
 const findMatchById = (id: string) => {
@@ -103,6 +108,7 @@ export const setStatusAs = (matchId: string, status: string) => {
   if (match) {
     match.status = status;
   }
+  onMatchesChangedCallback?.();
   vscode.commands.executeCommand('extension.showMatchesList');
 };
 
@@ -138,8 +144,9 @@ export function clearAllToggledMatches() {
 
 
 export function setBatchAction(action: string) {
-  allMatches.filter(m => m.selected).forEach(m => m.status = action) 
-  clearAllToggledMatches()  
+  allMatches.filter(m => m.selected).forEach(m => m.status = action);
+  onMatchesChangedCallback?.();
+  clearAllToggledMatches();
 }
 
 
@@ -163,9 +170,9 @@ export function buildFindingsMap(matches: Match[]): Map<string, number> {
 
 export const updateAllMatches = (allMatchesNew: Array<Match>) => {
   allMatches = allMatchesNew;
-  // Update the FileExplorer to show finding count
   fileExplorerProvider.findingsMap = buildFindingsMap(allMatches);
   fileExplorerProvider.refresh();
+  onMatchesChangedCallback?.();
 };
 
 export const addSemgrepMatch = (startLine: number, proof: string, path: string, pattern: Pattern) => {

@@ -7,8 +7,8 @@ import generateMatchesWebview, {
 import { setCriticality, currentlyVisibleMatches } from './matchesWebview';
 import {
   addComment, addManualMatch, allMatches, clearAllToggledMatches, deduplicateMatches,
-  jumpToCode, setBatchAction, setStatusAs, toggledMatchIds, updateAllMatches,
-  updateToggleState
+  jumpToCode, setBatchAction, setOnMatchesChangedCallback, setStatusAs, toggledMatchIds,
+  updateAllMatches, updateToggleState
 } from './matches';
 import {
   newProject, loadProject, saveProject, displayNoProjectWarning,
@@ -25,6 +25,7 @@ import { startSemgrepScan } from './semgrepRunner';
 import { finalImportSemgrepJson, startImportSemgrepJson } from './semgrepImporter';
 import { allMatchesTestSection, generateTestSectionMatchesWebview } from './testSectionMatchesWebview';
 import { generateFindingCreationWebiew } from "./manualMatchWebview";
+import { applyMatchDecorations, disposeDecorations, refreshAllOpenEditorDecorations } from './decorations';
 
 export let fileExplorerProvider: FileExplorerProvider;
 
@@ -35,6 +36,15 @@ export const activate = (context: vscode.ExtensionContext) => {
   let panel: vscode.WebviewPanel;
   let active = false;
   fileExplorerProvider = new FileExplorerProvider(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? "");
+
+  setOnMatchesChangedCallback(refreshAllOpenEditorDecorations);
+  context.subscriptions.push(
+    vscode.window.onDidChangeActiveTextEditor(editor => {
+      if (editor) { applyMatchDecorations(editor); }
+    }),
+    { dispose: disposeDecorations },
+  );
+  refreshAllOpenEditorDecorations();
 
   /*
   Register a Tree View
