@@ -39,6 +39,11 @@ export let allMatches: Array<Match> = [];
 export const toggledMatchIds: Set<number> = new Set<number>();
 let matchIdCounter = 0;
 
+let onMatchesChangedCallback: (() => void) | undefined;
+export function setOnMatchesChangedCallback(cb: () => void): void {
+  onMatchesChangedCallback = cb;
+}
+
 
 // finds and returns match from allMatches where matchId === id
 const findMatchById = (id: string) => {
@@ -103,6 +108,7 @@ export const setStatusAs = (matchId: string, status: string) => {
   if (match) {
     match.status = status;
   }
+  onMatchesChangedCallback?.();
   vscode.commands.executeCommand('extension.showMatchesList');
 };
 
@@ -138,8 +144,9 @@ export function clearAllToggledMatches() {
 
 
 export function setBatchAction(action: string) {
-  allMatches.filter(m => m.selected).forEach(m => m.status = action) 
-  clearAllToggledMatches()  
+  allMatches.filter(m => m.selected).forEach(m => m.status = action);
+  onMatchesChangedCallback?.();
+  clearAllToggledMatches();
 }
 
 
@@ -161,11 +168,49 @@ export function buildFindingsMap(matches: Match[]): Map<string, number> {
   return findingsMap;
 }
 
+const _numericToLabel: Record<string, string> = {
+  '1': 'INFO', '2': 'LOW', '3': 'MEDIUM', '4': 'HIGH', '5': 'CRITICAL',
+};
+export function normalizeCriticality(raw: string): string {
+  return _numericToLabel[raw] ?? raw;
+}
+
+const _critOrder = ['INFO', 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
+function _higherCrit(a: string, b: string): string {
+  return _critOrder.indexOf(a) >= _critOrder.indexOf(b) ? a : b;
+}
+
+export function buildBadgeMaps(
+  matches: Match[],
+  workspaceRoot: string
+): { countMap: Map<string, number>; critMap: Map<string, string> } {
+  const countMap = new Map<string, number>();
+  const critMap = new Map<string, string>();
+
+  for (const match of matches) {
+    const absPath = path.resolve(workspaceRoot, match.path);
+    const crit = normalizeCriticality(match.pattern.criticality);
+
+    countMap.set(absPath, (countMap.get(absPath) ?? 0) + 1);
+    critMap.set(absPath, _higherCrit(critMap.get(absPath) ?? 'INFO', crit));
+
+    let dir = path.dirname(absPath);
+    while (dir.length >= workspaceRoot.length && dir !== path.dirname(dir)) {
+      countMap.set(dir, (countMap.get(dir) ?? 0) + 1);
+      critMap.set(dir, _higherCrit(critMap.get(dir) ?? 'INFO', crit));
+      if (dir === workspaceRoot) { break; }
+      dir = path.dirname(dir);
+    }
+  }
+
+  return { countMap, critMap };
+}
+
 export const updateAllMatches = (allMatchesNew: Array<Match>) => {
   allMatches = allMatchesNew;
-  // Update the FileExplorer to show finding count
   fileExplorerProvider.findingsMap = buildFindingsMap(allMatches);
   fileExplorerProvider.refresh();
+  onMatchesChangedCallback?.();
 };
 
 export const addSemgrepMatch = (startLine: number, proof: string, path: string, pattern: Pattern) => {

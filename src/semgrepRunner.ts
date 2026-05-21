@@ -175,7 +175,7 @@ export async function startSemgrepScan(
 
     } else {
       // Use script to capture live output with a pseudo-TTY (PTY)
-      child = spawn('script', ['-q', '/dev/null', '-c', `${shell} -c "` + semgrepCommand + '"'], {
+      child = spawn('script', ['-q', '-c', `${shell} -c "` + semgrepCommand + '"', '/dev/null'], {
         stdio: ['ignore', 'pipe', 'pipe'],
         cwd: workspaceFolder// use the workspaceFolder Path as cwd to always get the correct relative file structure
       });
